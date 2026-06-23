@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Dashboard</h1>
+    </div>
+</div>
+
+<!-- Key Metrics Row -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Active Flocks</h5>
+                <h2 id="activeFlocks">0</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Total Birds</h5>
+                <h2 id="totalBirds">0</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Revenue (Month)</h5>
+                <h2 id="monthlyRevenue">₱0</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Expenses (Month)</h5>
+                <h2 id="monthlyExpenses">₱0</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5>Revenue Trend</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5>Expenses Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="expensesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profit Trend -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5>Profit Trend</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="profitChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dashboard initialization
+    function initDashboard() {
+        // Fetch data from API
+        fetch('/api/flocks/')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('activeFlocks').textContent = data.results ? data.results.length : 0;
+                let totalBirds = data.results ? data.results.reduce((sum, flock) => sum + flock.quantity, 0) : 0;
+                document.getElementById('totalBirds').textContent = totalBirds;
+            })
+            .catch(err => console.error('Error fetching flocks:', err));
+
+        // Initialize Charts
+        initRevenueChart();
+        initExpensesChart();
+        initProfitChart();
+    }
+
+    function initRevenueChart() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Revenue (₱)',
+                    data: [65000, 78000, 82000, 75000, 90000, 125000],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+
+    function initExpensesChart() {
+        const ctx = document.getElementById('expensesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Feed', 'Medicine', 'Equipment', 'Labor', 'Other'],
+                datasets: [{
+                    data: [35000, 15000, 10000, 20000, 8000],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(153, 102, 255, 0.6)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    }
+
+    function initProfitChart() {
+        const ctx = document.getElementById('profitChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Profit (₱)',
+                    data: [25000, 32000, 35000, 28000, 40000, 50000],
+                    backgroundColor: 'rgba(75, 192, 75, 0.6)',
+                    borderColor: 'rgb(75, 192, 75)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+{% endblock %}

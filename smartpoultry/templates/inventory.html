@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Inventory Management</h1>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+            <i class="bi bi-plus-circle"></i> Add Item
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Inventory Items</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover" id="inventoryTable">
+            <thead>
+                <tr>
+                    <th>Item Type</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                    <th>Cost/Unit</th>
+                    <th>Total Value</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Inventory Modal -->
+<div class="modal fade" id="addInventoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Inventory Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addInventoryForm">
+                    <div class="mb-3">
+                        <label class="form-label">Item Type</label>
+                        <select class="form-select" name="item_type" required>
+                            <option value="feed">Feed</option>
+                            <option value="medicine">Medicine</option>
+                            <option value="equipment">Equipment</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" class="form-control" name="quantity" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Unit</label>
+                        <input type="text" class="form-control" name="unit" placeholder="kg, liters, etc." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cost per Unit</label>
+                        <input type="number" class="form-control" name="cost_per_unit" step="0.01" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveInventoryBtn">Save Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function loadInventory() {
+        fetch('/api/inventory/items/')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('inventoryBody');
+                tbody.innerHTML = '';
+                (data.results || []).forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.item_type}</td>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.unit}</td>
+                        <td>₱${parseFloat(item.cost_per_unit).toFixed(2)}</td>
+                        <td>₱${parseFloat(item.total_value).toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+    }
+
+    document.getElementById('saveInventoryBtn').addEventListener('click', function() {
+        const form = document.getElementById('addInventoryForm');
+        const formData = new FormData(form);
+        
+        fetch('/api/inventory/items/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                item_type: formData.get('item_type'),
+                name: formData.get('name'),
+                quantity: parseFloat(formData.get('quantity')),
+                unit: formData.get('unit'),
+                cost_per_unit: parseFloat(formData.get('cost_per_unit'))
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            bootstrap.Modal.getInstance(document.getElementById('addInventoryModal')).hide();
+            loadInventory();
+            form.reset();
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadInventory);
+</script>
+{% endblock %}

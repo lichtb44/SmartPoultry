@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Analytics & Predictions</h1>
+
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5>Prediction Models</h5>
+    </div>
+    <div class="card-body">
+        <canvas id="predictionChart"></canvas>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Profit Prediction (Next 6 Months)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="profitPredictionChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Production Forecast</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="productionForecastChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function initPredictionChart() {
+        const ctx = document.getElementById('predictionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                datasets: [
+                    {
+                        label: 'Actual Revenue',
+                        data: [65000, 78000, 82000, 75000, 90000, 125000, null, null],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Predicted Revenue',
+                        data: [null, null, null, null, null, 125000, 135000, 145000],
+                        borderColor: 'rgba(255, 99, 132, 0.8)',
+                        borderDash: [5, 5],
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+
+    function initProfitPredictionChart() {
+        const ctx = document.getElementById('profitPredictionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Predicted Profit (₱)',
+                    data: [55000, 65000, 58000, 70000, 75000, 85000],
+                    backgroundColor: 'rgba(75, 192, 75, 0.6)',
+                    borderColor: 'rgb(75, 192, 75)',
+                    borderWidth: 1
+                }]
+            }
+        });
+    }
+
+    function initProductionForecastChart() {
+        const ctx = document.getElementById('productionForecastChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                datasets: [{
+                    label: 'Eggs Production (crates)',
+                    data: [150, 165, 170, 175, 180, 190],
+                    borderColor: 'rgb(255, 193, 7)',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initPredictionChart();
+        initProfitPredictionChart();
+        initProductionForecastChart();
+    });
+</script>
+{% endblock %}

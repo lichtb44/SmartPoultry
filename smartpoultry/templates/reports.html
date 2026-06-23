@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Reports</h1>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <button class="btn btn-success" onclick="generateReport('daily')">Daily Report</button>
+        <button class="btn btn-success" onclick="generateReport('weekly')">Weekly Report</button>
+        <button class="btn btn-success" onclick="generateReport('monthly')">Monthly Report</button>
+        <button class="btn btn-success" onclick="generateReport('annual')">Annual Report</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Generated Reports</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Report Type</th>
+                    <th>Title</th>
+                    <th>Date Range</th>
+                    <th>Generated</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="reportsBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function loadReports() {
+        fetch('/api/reports/')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('reportsBody');
+                tbody.innerHTML = '';
+                (data.results || []).forEach(report => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${report.report_type}</td>
+                        <td>${report.title}</td>
+                        <td>${new Date(report.start_date).toLocaleDateString()} - ${new Date(report.end_date).toLocaleDateString()}</td>
+                        <td>${new Date(report.generated_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="downloadReport(${report.id})">Download</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+    }
+
+    function generateReport(type) {
+        const today = new Date();
+        let startDate, endDate = today;
+        
+        switch(type) {
+            case 'daily':
+                startDate = today;
+                break;
+            case 'weekly':
+                startDate = new Date(today.setDate(today.getDate() - 7));
+                break;
+            case 'monthly':
+                startDate = new Date(today.setMonth(today.getMonth() - 1));
+                break;
+            case 'annual':
+                startDate = new Date(today.setFullYear(today.getFullYear() - 1));
+                break;
+        }
+
+        const reportData = {
+            report_type: type,
+            title: type.charAt(0).toUpperCase() + type.slice(1) + ' Report - ' + new Date().toLocaleDateString(),
+            start_date: startDate.toISOString().split('T')[0],
+            end_date: endDate.toISOString().split('T')[0],
+            summary: 'Auto-generated report'
+        };
+
+        fetch('/api/reports/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(reportData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadReports();
+            alert('Report generated successfully!');
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert('Error generating report');
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadReports);
+</script>
+{% endblock %}

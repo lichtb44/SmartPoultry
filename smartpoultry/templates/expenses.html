@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Expenses Tracking</h1>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+    </div>
+    <div class="col-md-4 text-end">
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+            <i class="bi bi-plus-circle"></i> Add Expense
+        </button>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Total Expenses</h5>
+                <h2 id="totalExpenses">₱0</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Average Expense</h5>
+                <h2 id="avgExpense">₱0</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Expense Records</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="expensesBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Expense Modal -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addExpenseForm">
+                    <div class="mb-3">
+                        <label class="form-label">Expense Type</label>
+                        <select class="form-select" name="expense_type" required>
+                            <option value="feed">Feed</option>
+                            <option value="medicine">Medicine</option>
+                            <option value="equipment">Equipment</option>
+                            <option value="labor">Labor</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" name="description" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <input type="number" class="form-control" name="amount" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <input type="text" class="form-control" name="category">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveExpenseBtn">Save Expense</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function loadExpenses() {
+        fetch('/api/expenses/')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('expensesBody');
+                tbody.innerHTML = '';
+                let total = 0;
+                const results = data.results || [];
+                
+                results.forEach(expense => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${new Date(expense.date).toLocaleDateString()}</td>
+                        <td>${expense.expense_type}</td>
+                        <td>${expense.description}</td>
+                        <td>${expense.category || '-'}</td>
+                        <td>₱${parseFloat(expense.amount).toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(row);
+                    total += parseFloat(expense.amount);
+                });
+                
+                document.getElementById('totalExpenses').textContent = '₱' + total.toFixed(2);
+                document.getElementById('avgExpense').textContent = '₱' + (results.length > 0 ? (total / results.length).toFixed(2) : 0);
+            });
+    }
+
+    document.getElementById('saveExpenseBtn').addEventListener('click', function() {
+        const form = document.getElementById('addExpenseForm');
+        const formData = new FormData(form);
+        
+        fetch('/api/expenses/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                expense_type: formData.get('expense_type'),
+                description: formData.get('description'),
+                amount: parseFloat(formData.get('amount')),
+                category: formData.get('category'),
+                date: formData.get('date')
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            bootstrap.Modal.getInstance(document.getElementById('addExpenseModal')).hide();
+            loadExpenses();
+            form.reset();
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadExpenses);
+</script>
+{% endblock %}

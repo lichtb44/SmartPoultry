@@ -1,0 +1,246 @@
+/* SMARTPOULTRY Custom Styles */
+
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --success-color: #48c774;
+    --danger-color: #f14668;
+    --warning-color: #ffdd57;
+    --info-color: #3298dc;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    background-color: #f5f7fa;
+}
+
+/* Navbar Customization */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff !important;
+}
+
+/* Card Styling */
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-bottom: 1px solid #e8e8e8;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Dashboard Cards */
+.card.text-white {
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.card.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.card.bg-success {
+    background: linear-gradient(135deg, #48c774 0%, #2cb547 100%) !important;
+}
+
+.card.bg-info {
+    background: linear-gradient(135deg, #3298dc 0%, #2c6eb8 100%) !important;
+}
+
+.card.bg-warning {
+    background: linear-gradient(135deg, #ffdd57 0%, #f6d049 100%) !important;
+    color: #333 !important;
+}
+
+/* Table Styling */
+.table {
+    background-color: #fff;
+    border-collapse: collapse;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    padding: 12px 15px;
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+    border-color: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    background: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    border: none;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    padding: 10px 12px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Badge Styling */
+.badge {
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* Chart Container */
+canvas {
+    max-height: 400px !important;
+}
+
+/* Alert Styling */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+    border-top: 1px solid #e8e8e8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .navbar-collapse {
+        padding-top: 10px;
+        border-top: 1px solid #495057;
+    }
+}
+
+/* Loading Animation */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Success Message */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--success-color);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

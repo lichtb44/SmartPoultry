@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1>Flocks Management</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFlockModal">
+            <i class="bi bi-plus-circle"></i> Add New Flock
+        </button>
+    </div>
+</div>
+
+<!-- Flocks Table -->
+<div class="card">
+    <div class="card-header">
+        <h5>Active Flocks</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover" id="flocksTable">
+            <thead>
+                <tr>
+                    <th>Flock ID</th>
+                    <th>Breed</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Added Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="flocksBody">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Flock Modal -->
+<div class="modal fade" id="addFlockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Flock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addFlockForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Flock ID</label>
+                        <input type="text" class="form-control" name="flock_id" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Breed</label>
+                        <select class="form-select" name="breed" required>
+                            <option>Choose breed...</option>
+                            <option value="layers">Layers</option>
+                            <option value="broilers">Broilers</option>
+                            <option value="ducks">Ducks</option>
+                            <option value="turkeys">Turkeys</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" class="form-control" name="quantity" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveFlockBtn">Save Flock</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function loadFlocks() {
+        fetch('/api/flocks/')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('flocksBody');
+                tbody.innerHTML = '';
+                
+                (data.results || []).forEach(flock => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${flock.flock_id}</td>
+                        <td>${flock.breed}</td>
+                        <td>${flock.quantity}</td>
+                        <td><span class="badge bg-success">${flock.status}</span></td>
+                        <td>${new Date(flock.date_added).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editFlock(${flock.id})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteFlock(${flock.id})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(err => console.error('Error loading flocks:', err));
+    }
+
+    document.getElementById('saveFlockBtn').addEventListener('click', function() {
+        const form = document.getElementById('addFlockForm');
+        const formData = new FormData(form);
+        
+        fetch('/api/flocks/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            },
+            body: JSON.stringify({
+                flock_id: formData.get('flock_id'),
+                breed: formData.get('breed'),
+                quantity: parseInt(formData.get('quantity')),
+                status: 'active'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            bootstrap.Modal.getInstance(document.getElementById('addFlockModal')).hide();
+            loadFlocks();
+            form.reset();
+        })
+        .catch(err => console.error('Error saving flock:', err));
+    });
+
+    function deleteFlock(id) {
+        if (confirm('Are you sure?')) {
+            fetch(`/api/flocks/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(() => loadFlocks())
+            .catch(err => console.error('Error deleting flock:', err));
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadFlocks);
+</script>
+{% endblock %}
