@@ -1,10 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 
 
 class Farm(models.Model):
     """Main farm information model."""
-    owner = models.OneToOneField(User, on_delete=models.CASCADE)
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_farm')
     name = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
     established_date = models.DateField()
