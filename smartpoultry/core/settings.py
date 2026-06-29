@@ -15,15 +15,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+ON_RENDER = os.getenv('RENDER', 'False') == 'True' or bool(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv('DEBUG', 'False' if ON_RENDER else 'True') == 'True'
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,smartpoultry.onrender.com').split(',')
+    if host.strip()
+]
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
+if ON_RENDER:
+    ALLOWED_HOSTS.extend(['.onrender.com', 'smartpoultry.onrender.com'])
+ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com,https://smartpoultry.onrender.com').split(',')
     if origin.strip()
 ]
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}")
+if ON_RENDER:
+    CSRF_TRUSTED_ORIGINS.extend(['https://*.onrender.com', 'https://smartpoultry.onrender.com'])
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(CSRF_TRUSTED_ORIGINS))
 
 # Application definition
 INSTALLED_APPS = [
