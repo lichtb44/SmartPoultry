@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: smartpoultry
+    env: python
+    buildCommand: pip install -r requirements.txt && python smartpoultry/manage.py collectstatic --noinput
+    startCommand: cd smartpoultry && python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: .onrender.com,localhost,127.0.0.1
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://*.onrender.com
+      - key: USE_POSTGRES
+        value: "False"
