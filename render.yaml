@@ -14,4 +14,13 @@ services:
       - key: CSRF_TRUSTED_ORIGINS
         value: https://*.onrender.com
       - key: USE_POSTGRES
-        value: "False"
+        value: "True"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smartpoultry-db
+          property: connectionString
+
+databases:
+  - name: smartpoultry-db
+    databaseName: smartpoultry
+    user: smartpoultry

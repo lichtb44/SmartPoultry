@@ -4,6 +4,7 @@ Django settings for SMARTPOULTRY project.
 
 import os
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -96,9 +97,36 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+def postgres_config_from_url(database_url):
+    """Build a Django PostgreSQL config from DATABASE_URL."""
+    parsed = urlparse(database_url)
+    query = parse_qs(parsed.query)
+
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': parsed.path.lstrip('/'),
+        'USER': parsed.username or '',
+        'PASSWORD': parsed.password or '',
+        'HOST': parsed.hostname or '',
+        'PORT': str(parsed.port or 5432),
+        'OPTIONS': {
+            key: values[-1]
+            for key, values in query.items()
+            if values and key in {'sslmode'}
+        },
+    }
+
+
 # Database
-# Using SQLite for development (default), PostgreSQL for production
-if os.getenv('USE_POSTGRES', 'False') == 'True':
+# Using SQLite for development (default), PostgreSQL when DATABASE_URL or
+# USE_POSTGRES=True is configured.
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': postgres_config_from_url(DATABASE_URL)
+    }
+elif os.getenv('USE_POSTGRES', 'False') == 'True':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -109,6 +137,8 @@ if os.getenv('USE_POSTGRES', 'False') == 'True':
             'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
+    if os.getenv('DB_SSLMODE'):
+        DATABASES['default']['OPTIONS'] = {'sslmode': os.getenv('DB_SSLMODE')}
 else:
     DATABASES = {
         'default': {
