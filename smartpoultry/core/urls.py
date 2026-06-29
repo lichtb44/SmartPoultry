@@ -9,6 +9,9 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('login/', views.index, name='login'),
+    path('register/', views.register, name='register'),
+    path('logout/', views.logout_view, name='logout'),
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
     path('api/flocks/', include('flocks.urls')),
