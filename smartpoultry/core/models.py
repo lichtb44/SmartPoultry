@@ -18,3 +18,28 @@ class Farm(models.Model):
 
     class Meta:
         verbose_name_plural = "Farms"
+
+
+class Feedback(models.Model):
+    """User feedback and reviews for the system."""
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('reviewed', 'Reviewed'),
+        ('resolved', 'Resolved'),
+        ('archived', 'Archived'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='feedback_items')
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    rating = models.PositiveSmallIntegerField(default=5)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    admin_response = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.subject} ({self.get_status_display()})"
+
+    class Meta:
+        ordering = ['-created_at']

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>Forecasting</h1>
+        <p>Projected revenue, production, and feed usage</p>
+    </div>
+</div>
+
+<section class="metric-grid">
+    <div class="metric-card"><span>Revenue Forecast</span><strong>&#8369;130,200</strong><small class="text-success">next month</small></div>
+    <div class="metric-card"><span>Expected Profit</span><strong>&#8369;58,450</strong><small class="text-success">92% confidence</small></div>
+    <div class="metric-card"><span>Feed Demand</span><strong>3,120 kg</strong><small>next 30 days</small></div>
+    <div class="metric-card"><span>Production Forecast</span><strong>5,120</strong><small>eggs next month</small></div>
+</section>
+
+<div class="panel-card">
+    <div class="panel-title">Revenue Forecast</div>
+    <canvas id="forecastChart"></canvas>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('forecastChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                datasets: [{
+                    label: 'Forecast',
+                    data: [65, 78, 82, 90, 102, 115, 130, 140],
+                    borderColor: '#0b6ee8',
+                    backgroundColor: 'rgba(11, 110, 232, 0.12)',
+                    fill: true,
+                    tension: 0.35
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    });
+</script>
+{% endblock %}

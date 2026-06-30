@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>Scenario Analysis</h1>
+        <p>Compare financial outcomes when key farm conditions change</p>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-title">What-if Scenario Analysis</div>
+    <div class="scenario-controls">
+        <select class="form-select form-select-sm">
+            <option>Feed Price Increase</option>
+            <option>Mortality Rate Increase</option>
+            <option>Egg Price Increase</option>
+        </select>
+        <input class="form-control form-control-sm" value="+10%">
+        <button class="btn btn-primary btn-sm">Apply</button>
+    </div>
+    <div class="scenario-results">
+        <div><span>Expected Profit</span><strong class="text-danger">&#8369;40,000</strong></div>
+        <div><span>Expected Revenue</span><strong>&#8369;120,000</strong></div>
+        <div><span>Expected Expenses</span><strong>&#8369;82,000</strong></div>
+    </div>
+</div>
+{% endblock %}

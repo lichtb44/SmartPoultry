@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <h1>Notifications</h1>
+        <p>System alerts and farm activity updates</p>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-title">Notifications</div>
+    <ul class="notification-list">
+        {% for notification in notifications %}
+            <li>
+                <i class="bi bi-bell text-primary"></i>
+                <span>{{ notification.title }}<small class="d-block text-muted">{{ notification.message }}</small></span>
+                <small>{{ notification.created_at|timesince }} ago</small>
+            </li>
+        {% empty %}
+            <li>
+                <i class="bi bi-check-circle text-success"></i>
+                <span>No notifications yet</span>
+                <small>Now</small>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
