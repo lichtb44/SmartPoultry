@@ -4,7 +4,6 @@ Django settings for SMARTPOULTRY project.
 
 import os
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -16,32 +15,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 
-ON_RENDER = os.getenv('RENDER', 'False') == 'True' or bool(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False' if ON_RENDER else 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,smartpoultry.onrender.com').split(',')
-    if host.strip()
-]
-if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
-    ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
-if ON_RENDER:
-    ALLOWED_HOSTS.extend(['.onrender.com', 'smartpoultry.onrender.com'])
-ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
-
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com,https://smartpoultry.onrender.com').split(',')
-    if origin.strip()
-]
-if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
-    CSRF_TRUSTED_ORIGINS.append(f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}")
-if ON_RENDER:
-    CSRF_TRUSTED_ORIGINS.extend(['https://*.onrender.com', 'https://smartpoultry.onrender.com'])
-CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(CSRF_TRUSTED_ORIGINS))
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -67,7 +44,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -97,36 +73,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-def postgres_config_from_url(database_url):
-    """Build a Django PostgreSQL config from DATABASE_URL."""
-    parsed = urlparse(database_url)
-    query = parse_qs(parsed.query)
-
-    return {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': parsed.path.lstrip('/'),
-        'USER': parsed.username or '',
-        'PASSWORD': parsed.password or '',
-        'HOST': parsed.hostname or '',
-        'PORT': str(parsed.port or 5432),
-        'OPTIONS': {
-            key: values[-1]
-            for key, values in query.items()
-            if values and key in {'sslmode'}
-        },
-    }
-
-
 # Database
-# Using SQLite for development (default), PostgreSQL when DATABASE_URL or
-# USE_POSTGRES=True is configured.
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-if DATABASE_URL:
-    DATABASES = {
-        'default': postgres_config_from_url(DATABASE_URL)
-    }
-elif os.getenv('USE_POSTGRES', 'False') == 'True':
+# Using SQLite for development (default), PostgreSQL for production
+if os.getenv('USE_POSTGRES', 'False') == 'True':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -137,8 +86,6 @@ elif os.getenv('USE_POSTGRES', 'False') == 'True':
             'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
-    if os.getenv('DB_SSLMODE'):
-        DATABASES['default']['OPTIONS'] = {'sslmode': os.getenv('DB_SSLMODE')}
 else:
     DATABASES = {
         'default': {
@@ -173,7 +120,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'smartpoultry' / 'static']
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'

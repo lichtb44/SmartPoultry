@@ -7,7 +7,7 @@
         <h1>Flocks Management</h1>
     </div>
     <div class="col-md-4 text-end">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFlockModal">
+        <button class="btn btn-primary" id="addFlockBtn">
             <i class="bi bi-plus-circle"></i> Add New Flock
         </button>
     </div>
@@ -55,7 +55,7 @@
                     <div class="mb-3">
                         <label class="form-label">Breed</label>
                         <select class="form-select" name="breed" required>
-                            <option>Choose breed...</option>
+                            <option value="">Choose breed...</option>
                             <option value="layers">Layers</option>
                             <option value="broilers">Broilers</option>
                             <option value="ducks">Ducks</option>
@@ -76,10 +76,32 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteFlockModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Flock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to delete flock <strong id="deleteFlockName"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteFlockBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    let editingFlockId = null;
+    let deletingFlockId = null;
+
     function loadFlocks() {
         fetch('/api/flocks/')
             .then(response => response.json())
@@ -97,7 +119,7 @@
                         <td>${new Date(flock.date_added).toLocaleDateString()}</td>
                         <td>
                             <button class="btn btn-sm btn-info" onclick="editFlock(${flock.id})">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteFlock(${flock.id})">Delete</button>
+                            <button class="btn btn-sm btn-danger" data-flock-name="${encodeURIComponent(flock.flock_id)}" onclick="confirmDeleteFlock(${flock.id}, decodeURIComponent(this.dataset.flockName))">Delete</button>
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -106,43 +128,112 @@
             .catch(err => console.error('Error loading flocks:', err));
     }
 
+    document.getElementById('addFlockBtn').addEventListener('click', function() {
+        editingFlockId = null;
+        const form = document.getElementById('addFlockForm');
+        form.reset();
+        document.querySelector('#addFlockModal .modal-title').textContent = 'Add New Flock';
+        document.getElementById('saveFlockBtn').textContent = 'Save Flock';
+        new bootstrap.Modal(document.getElementById('addFlockModal')).show();
+    });
+
     document.getElementById('saveFlockBtn').addEventListener('click', function() {
         const form = document.getElementById('addFlockForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         const formData = new FormData(form);
+        const url = editingFlockId ? `/api/flocks/${editingFlockId}/` : '/api/flocks/';
+        const method = editingFlockId ? 'PATCH' : 'POST';
+        const payload = {
+            flock_id: formData.get('flock_id'),
+            breed: formData.get('breed'),
+            quantity: parseInt(formData.get('quantity'))
+        };
+
+        if (!editingFlockId) {
+            payload.status = 'active';
+        }
         
-        fetch('/api/flocks/', {
-            method: 'POST',
+        fetch(url, {
+            method: method,
             headers: {
+                'Content-Type': 'application/json',
                 'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
             },
-            body: JSON.stringify({
-                flock_id: formData.get('flock_id'),
-                breed: formData.get('breed'),
-                quantity: parseInt(formData.get('quantity')),
-                status: 'active'
-            })
+            body: JSON.stringify(payload)
         })
-        .then(response => response.json())
+        .then(response => {
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw data;
+                }
+                return data;
+            });
+        })
         .then(data => {
             bootstrap.Modal.getInstance(document.getElementById('addFlockModal')).hide();
             loadFlocks();
             form.reset();
+            editingFlockId = null;
         })
-        .catch(err => console.error('Error saving flock:', err));
+        .catch(err => {
+            const message = Object.entries(err)
+                .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+                .join('\n') || 'Unable to save flock.';
+            alert(message);
+            console.error('Error saving flock:', err);
+        });
     });
 
-    function deleteFlock(id) {
-        if (confirm('Are you sure?')) {
-            fetch(`/api/flocks/${id}/`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
+    function editFlock(id) {
+        fetch(`/api/flocks/${id}/`)
+            .then(response => response.json())
+            .then(flock => {
+                editingFlockId = id;
+                const form = document.getElementById('addFlockForm');
+                form.elements.flock_id.value = flock.flock_id;
+                form.elements.breed.value = flock.breed;
+                form.elements.quantity.value = flock.quantity;
+                document.querySelector('#addFlockModal .modal-title').textContent = 'Edit Flock';
+                document.getElementById('saveFlockBtn').textContent = 'Update Flock';
+                new bootstrap.Modal(document.getElementById('addFlockModal')).show();
             })
-            .then(() => loadFlocks())
-            .catch(err => console.error('Error deleting flock:', err));
-        }
+            .catch(err => console.error('Error loading flock:', err));
     }
+
+    function confirmDeleteFlock(id, flockId) {
+        deletingFlockId = id;
+        document.getElementById('deleteFlockName').textContent = flockId;
+        new bootstrap.Modal(document.getElementById('deleteFlockModal')).show();
+    }
+
+    document.getElementById('confirmDeleteFlockBtn').addEventListener('click', function() {
+        if (!deletingFlockId) {
+            return;
+        }
+
+        fetch(`/api/flocks/${deletingFlockId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Unable to delete flock.');
+            }
+            bootstrap.Modal.getInstance(document.getElementById('deleteFlockModal')).hide();
+            deletingFlockId = null;
+            loadFlocks();
+        })
+        .catch(err => {
+            alert(err.message);
+            console.error('Error deleting flock:', err);
+        });
+    });
 
     document.addEventListener('DOMContentLoaded', loadFlocks);
 </script>

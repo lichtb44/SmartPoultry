@@ -63,7 +63,7 @@ def register(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('index')
+    return redirect('login')
 
 
 @login_required(login_url='login')
