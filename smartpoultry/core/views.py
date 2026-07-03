@@ -6,8 +6,12 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
+from django.db.models.functions import TruncMonth
 from django.http import HttpResponseForbidden
+from django.utils import timezone
+from django.utils.text import capfirst
+from .forms import MortalityRecordForm, ProductionRecordForm
 from .models import Feedback
 
 User = get_user_model()
@@ -86,6 +90,40 @@ def register(request):
     return render(request, 'register.html', {'error': error})
 
 
+def forgot_password(request):
+    """Public password reset page for users who forgot their password."""
+    if request.user.is_authenticated:
+        if is_admin_user(request.user):
+            return redirect('admin_dashboard')
+        return redirect('dashboard')
+
+    error = None
+    success = None
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+
+        if not email or not new_password or not confirm_password:
+            error = 'Please fill out all fields.'
+        elif new_password != confirm_password:
+            error = 'Passwords do not match.'
+        else:
+            try:
+                user = User.objects.get(email__iexact=email)
+                validate_password(new_password, user)
+            except User.DoesNotExist:
+                error = 'No account was found with that email address.'
+            except ValidationError as exc:
+                error = ' '.join(exc.messages)
+            else:
+                user.set_password(new_password)
+                user.save()
+                success = 'Password reset successfully. You can now log in with your new password.'
+
+    return render(request, 'forgot_password.html', {'error': error, 'success': success})
+
+
 def logout_view(request):
     logout(request)
     return redirect('login')
@@ -96,7 +134,140 @@ def dashboard(request):
     """Dashboard view with overview."""
     if is_admin_user(request.user):
         return redirect('admin_dashboard')
-    return render(request, 'dashboard.html')
+
+    from expenses.models import Expense
+    from flocks.models import Flock
+    from inventory.models import Inventory
+    from production.models import MortalityRecord, ProductionRecord
+    from revenue.models import Revenue
+
+    today = timezone.localdate()
+    current_month_start = today.replace(day=1)
+    if current_month_start.month == 1:
+        previous_month_start = current_month_start.replace(year=current_month_start.year - 1, month=12)
+    else:
+        previous_month_start = current_month_start.replace(month=current_month_start.month - 1)
+
+    def decimal_sum(queryset, field):
+        return queryset.aggregate(total=Sum(field))['total'] or 0
+
+    def percent_change(current, previous):
+        if not previous:
+            return None
+        return round(((current - previous) / previous) * 100, 1)
+
+    current_revenue = decimal_sum(Revenue.objects.filter(date__gte=current_month_start), 'total_amount')
+    previous_revenue = decimal_sum(
+        Revenue.objects.filter(date__gte=previous_month_start, date__lt=current_month_start),
+        'total_amount',
+    )
+    current_expenses = decimal_sum(Expense.objects.filter(date__gte=current_month_start), 'amount')
+    previous_expenses = decimal_sum(
+        Expense.objects.filter(date__gte=previous_month_start, date__lt=current_month_start),
+        'amount',
+    )
+    current_profit = current_revenue - current_expenses
+    previous_profit = previous_revenue - previous_expenses
+    feed_cost = decimal_sum(
+        Expense.objects.filter(date__gte=current_month_start, expense_type='feed'),
+        'amount',
+    )
+    production_total = decimal_sum(
+        ProductionRecord.objects.filter(date__gte=current_month_start, product_type='eggs'),
+        'quantity',
+    )
+    mortality_total = MortalityRecord.objects.filter(date__gte=current_month_start).aggregate(
+        total=Sum('quantity')
+    )['total'] or 0
+    total_birds = Flock.objects.filter(status='active').aggregate(total=Sum('quantity'))['total'] or 0
+    active_flocks = Flock.objects.filter(status='active').count()
+    mortality_rate = round((mortality_total / total_birds) * 100, 2) if total_birds else 0
+    feed_stock = decimal_sum(Inventory.objects.filter(item_type='feed'), 'quantity')
+    feed_expense_share = round((feed_cost / current_expenses) * 100, 1) if current_expenses else 0
+
+    trend_start = current_month_start
+    for _ in range(5):
+        if trend_start.month == 1:
+            trend_start = trend_start.replace(year=trend_start.year - 1, month=12)
+        else:
+            trend_start = trend_start.replace(month=trend_start.month - 1)
+
+    def month_key(value):
+        return value.date() if hasattr(value, 'date') else value
+
+    revenue_by_month = {
+        month_key(item['month']): item['total'] or 0
+        for item in Revenue.objects.filter(date__gte=trend_start)
+        .annotate(month=TruncMonth('date'))
+        .values('month')
+        .annotate(total=Sum('total_amount'))
+    }
+    expenses_by_month = {
+        month_key(item['month']): item['total'] or 0
+        for item in Expense.objects.filter(date__gte=trend_start)
+        .annotate(month=TruncMonth('date'))
+        .values('month')
+        .annotate(total=Sum('amount'))
+    }
+    feed_by_month = {
+        month_key(item['month']): item['total'] or 0
+        for item in Expense.objects.filter(date__gte=trend_start, expense_type='feed')
+        .annotate(month=TruncMonth('date'))
+        .values('month')
+        .annotate(total=Sum('amount'))
+    }
+
+    chart_months = []
+    month_cursor = trend_start
+    for _ in range(6):
+        chart_months.append(month_cursor)
+        if month_cursor.month == 12:
+            month_cursor = month_cursor.replace(year=month_cursor.year + 1, month=1)
+        else:
+            month_cursor = month_cursor.replace(month=month_cursor.month + 1)
+
+    revenue_values = [float(revenue_by_month.get(month, 0)) for month in chart_months]
+    expense_values = [float(expenses_by_month.get(month, 0)) for month in chart_months]
+    feed_values = [float(feed_by_month.get(month, 0)) for month in chart_months]
+    profit_values = [revenue_values[index] - expense_values[index] for index in range(len(chart_months))]
+
+    latest_notification = 'No recent notifications'
+    try:
+        from notifications.models import Notification
+        notification = Notification.objects.filter(user=request.user).first()
+        if notification:
+            latest_notification = notification.title
+    except Exception:
+        pass
+
+    context = {
+        'date_range_label': f'{current_month_start:%b} 1 - {today:%b} {today.day}, {today.year}',
+        'metrics': {
+            'revenue': current_revenue,
+            'revenue_change': percent_change(current_revenue, previous_revenue),
+            'expenses': current_expenses,
+            'expenses_change': percent_change(current_expenses, previous_expenses),
+            'profit': current_profit,
+            'profit_change': percent_change(current_profit, previous_profit),
+            'cash_flow': current_profit,
+            'feed_cost': feed_cost,
+            'feed_expense_share': feed_expense_share,
+            'mortality_rate': mortality_rate,
+            'total_birds': total_birds,
+            'active_flocks': active_flocks,
+            'production_total': production_total,
+            'feed_stock': feed_stock,
+            'latest_notification': latest_notification,
+        },
+        'chart_data': {
+            'labels': [capfirst(month.strftime('%b')) for month in chart_months],
+            'revenue': revenue_values,
+            'expenses': expense_values,
+            'profit': profit_values,
+            'feed': feed_values,
+        },
+    }
+    return render(request, 'dashboard.html', context)
 
 
 @login_required(login_url='login')
@@ -219,6 +390,7 @@ def admin_dashboard(request):
         'active_users': User.objects.filter(is_active=True, is_active_user=True).count(),
         'inactive_users': User.objects.filter(Q(is_active=False) | Q(is_active_user=False)).count(),
         'new_feedback': Feedback.objects.filter(status='new').count(),
+        'new_users_today': User.objects.filter(date_joined__date=timezone.localdate()).count(),
     }
     feedback_status_counts = Feedback.objects.values('status').annotate(total=Count('id'))
 
@@ -302,6 +474,23 @@ def admin_feedback(request):
 
 
 @admin_required
+def admin_feedback_detail(request, feedback_id):
+    """Read one feedback item and respond to it."""
+    feedback = get_object_or_404(Feedback.objects.select_related('user'), pk=feedback_id)
+    if request.method == 'POST':
+        feedback.status = request.POST.get('status', feedback.status)
+        feedback.admin_response = request.POST.get('admin_response', '').strip()
+        feedback.save()
+        messages.success(request, 'Feedback response saved.')
+        return redirect('admin_feedback_detail', feedback_id=feedback.id)
+
+    return render(request, 'admin_feedback_detail.html', {
+        'feedback': feedback,
+        'status_choices': Feedback.STATUS_CHOICES,
+    })
+
+
+@admin_required
 def admin_update_feedback(request, feedback_id):
     if request.method != 'POST':
         return redirect('admin_feedback')
@@ -368,11 +557,97 @@ def production_records_view(request):
 
 
 @login_required(login_url='login')
+def production_record_create(request):
+    """Create a production record."""
+    form = ProductionRecordForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Production record added.')
+        return redirect('production_records')
+    return render(request, 'production_record_form.html', {
+        'form': form,
+        'title': 'Add Production Record',
+        'submit_label': 'Save Record',
+    })
+
+
+@login_required(login_url='login')
+def production_record_update(request, record_id):
+    """Edit a production record."""
+    from production.models import ProductionRecord
+    record = get_object_or_404(ProductionRecord, pk=record_id)
+    form = ProductionRecordForm(request.POST or None, instance=record)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Production record updated.')
+        return redirect('production_records')
+    return render(request, 'production_record_form.html', {
+        'form': form,
+        'title': 'Edit Production Record',
+        'submit_label': 'Update Record',
+    })
+
+
+@login_required(login_url='login')
+def production_record_delete(request, record_id):
+    """Delete a production record."""
+    from production.models import ProductionRecord
+    record = get_object_or_404(ProductionRecord, pk=record_id)
+    if request.method == 'POST':
+        record.delete()
+        messages.success(request, 'Production record deleted.')
+    return redirect('production_records')
+
+
+@login_required(login_url='login')
 def mortality_records_view(request):
     """Mortality records page."""
     from production.models import MortalityRecord
     records = MortalityRecord.objects.select_related('flock')[:50]
     return render(request, 'mortality_records.html', {'records': records})
+
+
+@login_required(login_url='login')
+def mortality_record_create(request):
+    """Create a mortality record."""
+    form = MortalityRecordForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Mortality record added.')
+        return redirect('mortality_records')
+    return render(request, 'mortality_record_form.html', {
+        'form': form,
+        'title': 'Add Mortality Record',
+        'submit_label': 'Save Record',
+    })
+
+
+@login_required(login_url='login')
+def mortality_record_update(request, record_id):
+    """Edit a mortality record."""
+    from production.models import MortalityRecord
+    record = get_object_or_404(MortalityRecord, pk=record_id)
+    form = MortalityRecordForm(request.POST or None, instance=record)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Mortality record updated.')
+        return redirect('mortality_records')
+    return render(request, 'mortality_record_form.html', {
+        'form': form,
+        'title': 'Edit Mortality Record',
+        'submit_label': 'Update Record',
+    })
+
+
+@login_required(login_url='login')
+def mortality_record_delete(request, record_id):
+    """Delete a mortality record."""
+    from production.models import MortalityRecord
+    record = get_object_or_404(MortalityRecord, pk=record_id)
+    if request.method == 'POST':
+        record.delete()
+        messages.success(request, 'Mortality record deleted.')
+    return redirect('mortality_records')
 
 
 @login_required(login_url='login')

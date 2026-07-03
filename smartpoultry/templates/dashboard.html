@@ -8,51 +8,67 @@
         <p>Overview of your poultry farm performance</p>
     </div>
     <select class="form-select form-select-sm date-filter" aria-label="Date range">
-        <option>May 1 - May 31, 2026</option>
-        <option>Last 7 days</option>
-        <option>Last 90 days</option>
+        <option>{{ date_range_label }}</option>
     </select>
 </div>
 
 <section class="metric-grid">
     <div class="metric-card">
         <span>Total Revenue</span>
-        <strong>&#8369;125,000</strong>
-        <small class="text-success">+12.5%</small>
+        <strong>&#8369;{{ metrics.revenue|floatformat:2 }}</strong>
+        {% if metrics.revenue_change is None %}
+            <small>No previous month data</small>
+        {% elif metrics.revenue_change >= 0 %}
+            <small class="text-success">+{{ metrics.revenue_change }}%</small>
+        {% else %}
+            <small class="text-danger">{{ metrics.revenue_change }}%</small>
+        {% endif %}
     </div>
     <div class="metric-card">
         <span>Total Expenses</span>
-        <strong>&#8369;80,000</strong>
-        <small class="text-danger">-5.4%</small>
+        <strong>&#8369;{{ metrics.expenses|floatformat:2 }}</strong>
+        {% if metrics.expenses_change is None %}
+            <small>No previous month data</small>
+        {% elif metrics.expenses_change >= 0 %}
+            <small class="text-danger">+{{ metrics.expenses_change }}%</small>
+        {% else %}
+            <small class="text-success">{{ metrics.expenses_change }}%</small>
+        {% endif %}
     </div>
     <div class="metric-card">
         <span>Net Profit</span>
-        <strong>&#8369;45,000</strong>
-        <small class="text-success">+25.6%</small>
+        <strong>&#8369;{{ metrics.profit|floatformat:2 }}</strong>
+        {% if metrics.profit_change is None %}
+            <small>No previous month data</small>
+        {% elif metrics.profit_change >= 0 %}
+            <small class="text-success">+{{ metrics.profit_change }}%</small>
+        {% else %}
+            <small class="text-danger">{{ metrics.profit_change }}%</small>
+        {% endif %}
     </div>
     <div class="metric-card">
         <span>Cash Flow</span>
-        <strong>&#8369;18,000</strong>
-        <small class="text-success">+8.1%</small>
+        <strong>&#8369;{{ metrics.cash_flow|floatformat:2 }}</strong>
+        <small>This month</small>
     </div>
     <div class="metric-card">
         <span>Feed Cost</span>
-        <strong>&#8369;30,000</strong>
-        <small>24% of expenses</small>
+        <strong>&#8369;{{ metrics.feed_cost|floatformat:2 }}</strong>
+        <small>{{ metrics.feed_expense_share }}% of expenses</small>
     </div>
     <div class="metric-card">
         <span>Mortality Rate</span>
-        <strong>2.5%</strong>
-        <small class="text-danger">-0.4%</small>
+        <strong>{{ metrics.mortality_rate }}%</strong>
+        <small>This month</small>
     </div>
     <div class="metric-card">
         <span>Total Birds</span>
-        <strong id="totalBirds">0</strong>
-        <small id="activeFlocks">0 active flocks</small>
+        <strong>{{ metrics.total_birds }}</strong>
+        <small>{{ metrics.active_flocks }} active flocks</small>
     </div>
     <div class="metric-card">
         <span>Production</span>
-        <strong>4,850</strong>
+        <strong>{{ metrics.production_total|floatformat:0 }}</strong>
         <small>eggs this month</small>
     </div>
 </section>
@@ -71,24 +87,24 @@
         <canvas id="profitChart"></canvas>
     </div>
     <div class="panel-card panel-wide">
-        <div class="panel-title">Feed Consumption (kg)</div>
+        <div class="panel-title">Feed Expense Trend</div>
         <canvas id="feedChart"></canvas>
     </div>
     <div class="panel-card prediction-card">
-        <div class="panel-title">Predictions (Next Month)</div>
+        <div class="panel-title">Live Snapshot</div>
         <div class="prediction-row">
             <div>
-                <span>Predicted Profit</span>
-                <strong>&#8369;58,450</strong>
+                <span>Feed Stock</span>
+                <strong>{{ metrics.feed_stock|floatformat:2 }}</strong>
             </div>
-            <small class="text-success">92% confidence</small>
+            <small>current inventory</small>
         </div>
         <div class="prediction-row">
             <div>
-                <span>Revenue Forecast</span>
-                <strong>&#8369;130,200</strong>
+                <span>Latest Alert</span>
+                <strong>{{ metrics.latest_notification }}</strong>
             </div>
-            <small class="text-success">80% confidence</small>
+            <small>notifications</small>
         </div>
         <a href="{% url 'analytics' %}" class="btn btn-primary btn-sm w-100">View Analytics</a>
     </div>
@@ -106,9 +122,9 @@
             <button class="btn btn-primary btn-sm">Apply</button>
         </div>
         <div class="scenario-results">
-            <div><span>Expected Profit</span><strong class="text-danger">&#8369;40,000</strong></div>
-            <div><span>Expected Revenue</span><strong>&#8369;120,000</strong></div>
-            <div><span>Expected Expenses</span><strong>&#8369;82,000</strong></div>
+            <div><span>Current Profit</span><strong class="{% if metrics.profit < 0 %}text-danger{% else %}text-success{% endif %}">&#8369;{{ metrics.profit|floatformat:2 }}</strong></div>
+            <div><span>Current Revenue</span><strong>&#8369;{{ metrics.revenue|floatformat:2 }}</strong></div>
+            <div><span>Current Expenses</span><strong>&#8369;{{ metrics.expenses|floatformat:2 }}</strong></div>
         </div>
     </div>
 
@@ -135,29 +151,23 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ chart_data|json_script:"dashboard-chart-data" }}
 <script>
     function initDashboard() {
-        fetch('/api/flocks/')
-            .then(response => response.json())
-            .then(data => {
-                const flocks = data.results || [];
-                document.getElementById('activeFlocks').textContent = `${flocks.length} active flocks`;
-                document.getElementById('totalBirds').textContent = flocks.reduce((sum, flock) => sum + flock.quantity, 0).toLocaleString();
-            })
-            .catch(err => console.error('Error fetching flocks:', err));
+        const chartData = JSON.parse(document.getElementById('dashboard-chart-data').textContent);
 
-        makeLineChart('revenueChart', 'Revenue', [20, 42, 34, 66, 51, 83], '#0b6ee8');
-        makeLineChart('expensesChart', 'Expenses', [12, 24, 18, 32, 29, 43], '#f04438');
-        makeLineChart('profitChart', 'Profit', [8, 18, 16, 34, 22, 40], '#16a34a');
-        makeBarChart('feedChart');
+        makeLineChart('revenueChart', 'Revenue', chartData.labels, chartData.revenue, '#0b6ee8');
+        makeLineChart('expensesChart', 'Expenses', chartData.labels, chartData.expenses, '#f04438');
+        makeLineChart('profitChart', 'Profit', chartData.labels, chartData.profit, '#16a34a');
+        makeBarChart('feedChart', chartData.labels, chartData.feed);
     }
 
-    function makeLineChart(id, label, values, color) {
+    function makeLineChart(id, label, labels, values, color) {
         const ctx = document.getElementById(id).getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels,
                 datasets: [{
                     label,
                     data: values,
@@ -173,15 +183,15 @@
         });
     }
 
-    function makeBarChart(id) {
+    function makeBarChart(id, labels, values) {
         const ctx = document.getElementById(id).getContext('2d');
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels,
                 datasets: [{
-                    label: 'Feed',
-                    data: [90, 70, 86, 130, 128, 118],
+                    label: 'Feed Expense',
+                    data: values,
                     backgroundColor: '#2f80ed',
                     borderRadius: 4
                 }]

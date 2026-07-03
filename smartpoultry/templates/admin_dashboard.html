@@ -1,108 +1,132 @@
 {% extends 'base.html' %}
 
+{% block admin_title %}Dashboard{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">User Account Management</h1>
-    <a href="{% url 'admin_feedback' %}" class="btn btn-outline-primary">
-        <i class="bi bi-chat-square-text me-1"></i> Manage Feedback
-    </a>
-</div>
+<section class="admin-stat-grid">
+    <div class="admin-stat-card stat-blue">
+        <span class="stat-icon"><i class="bi bi-people-fill"></i></span>
+        <div>
+            <small>Total Users</small>
+            <strong>{{ stats.total_users }}</strong>
+            <p>All registered users</p>
+        </div>
+    </div>
+    <div class="admin-stat-card stat-green">
+        <span class="stat-icon"><i class="bi bi-person-check-fill"></i></span>
+        <div>
+            <small>Active Users</small>
+            <strong>{{ stats.active_users }}</strong>
+            <p>Enabled accounts</p>
+        </div>
+        <span class="stat-bar"><i style="width: 70%"></i></span>
+    </div>
+    <div class="admin-stat-card stat-orange">
+        <span class="stat-icon"><i class="bi bi-person-x-fill"></i></span>
+        <div>
+            <small>Inactive Users</small>
+            <strong>{{ stats.inactive_users }}</strong>
+            <p>Disabled accounts</p>
+        </div>
+        <span class="stat-bar"><i style="width: 42%"></i></span>
+    </div>
+    <div class="admin-stat-card stat-purple">
+        <span class="stat-icon"><i class="bi bi-chat-dots-fill"></i></span>
+        <div>
+            <small>Feedback Pending</small>
+            <strong>{{ stats.new_feedback }}</strong>
+            <p>Awaiting response</p>
+        </div>
+        <span class="stat-bar"><i style="width: 64%"></i></span>
+    </div>
+    <div class="admin-stat-card stat-yellow">
+        <span class="stat-icon"><i class="bi bi-person-plus-fill"></i></span>
+        <div>
+            <small>New Users Today</small>
+            <strong>{{ stats.new_users_today }}</strong>
+            <p>Registered today</p>
+        </div>
+        <span class="stat-bar"><i style="width: 60%"></i></span>
+    </div>
+</section>
 
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
-                <h5 class="card-title">Total Users</h5>
-                <h2>{{ stats.total_users }}</h2>
-            </div>
+<section class="admin-panel" id="users">
+    <div class="admin-panel-header">
+        <div>
+            <h2>Users Management</h2>
+            <p>View and manage all system users</p>
         </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-white bg-success">
-            <div class="card-body">
-                <h5 class="card-title">Active Users</h5>
-                <h2>{{ stats.active_users }}</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-white bg-secondary">
-            <div class="card-body">
-                <h5 class="card-title">Inactive Users</h5>
-                <h2>{{ stats.inactive_users }}</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-white bg-warning">
-            <div class="card-body">
-                <h5 class="card-title">New Feedback</h5>
-                <h2>{{ stats.new_feedback }}</h2>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card mb-4">
-    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="bi bi-people me-2"></i>User Accounts</h5>
-        <form class="d-flex" method="get">
-            <input type="search" class="form-control form-control-sm me-2" name="q" value="{{ query }}" placeholder="Search users">
-            <button type="submit" class="btn btn-sm btn-light">Search</button>
+        <form class="admin-search" method="get">
+            <input type="search" name="q" value="{{ query }}" placeholder="Search users by name, email or farm...">
+            <button type="submit" aria-label="Search"><i class="bi bi-search"></i></button>
         </form>
+        <select class="admin-filter" aria-label="Status filter">
+            <option>All Status</option>
+            <option>Active</option>
+            <option>Inactive</option>
+        </select>
+        <a class="admin-lite-btn" href="/admin/accounts/userprofile/">
+            <i class="bi bi-download"></i> Export
+        </a>
+        <a class="admin-primary-btn" href="/admin/accounts/userprofile/add/">
+            <i class="bi bi-plus-lg"></i> Add Admin
+        </a>
     </div>
+
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="admin-table">
             <thead>
                 <tr>
-                    <th>User</th>
+                    <th>ID</th>
+                    <th>Name</th>
                     <th>Email</th>
+                    <th>Farm Name</th>
                     <th>Status</th>
-                    <th>Joined</th>
+                    <th>Registered Date</th>
+                    <th>Last Login</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for account in managed_users %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>
-                            <strong>{{ account.username }}</strong>
-                            {% if account.get_full_name %}<div class="text-muted small">{{ account.get_full_name }}</div>{% endif %}
+                            <div class="admin-person">
+                                <span>{{ account.username|slice:":2"|upper }}</span>
+                                <strong>{{ account.get_full_name|default:account.username }}</strong>
+                            </div>
                         </td>
                         <td>{{ account.email|default:"-" }}</td>
+                        <td>{% if account.farm %}{{ account.farm.name }}{% else %}-{% endif %}</td>
                         <td>
                             {% if account.is_active and account.is_active_user %}
-                                <span class="badge bg-success">Active</span>
+                                <span class="admin-status active"><i></i>Active</span>
                             {% else %}
-                                <span class="badge bg-secondary">Inactive</span>
+                                <span class="admin-status inactive"><i></i>Inactive</span>
                             {% endif %}
-                            {% if account.is_staff %}<span class="badge bg-primary">Staff</span>{% endif %}
-                            {% if account.is_superuser %}<span class="badge bg-danger">Superuser</span>{% endif %}
                         </td>
-                        <td>{{ account.date_joined|date:"M d, Y" }}</td>
+                        <td>{{ account.date_joined|date:"m/d/Y" }}</td>
+                        <td>{% if account.last_login %}{{ account.last_login|date:"m/d/Y h:i A" }}{% else %}-{% endif %}</td>
                         <td class="text-end">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{% url 'admin_reset_user_password' account.id %}" class="btn btn-outline-primary">
-                                    <i class="bi bi-key"></i> Reset
-                                </a>
+                            <div class="admin-actions">
+                                <a href="/admin/accounts/userprofile/{{ account.id }}/change/" title="View"><i class="bi bi-eye"></i></a>
                                 <form method="post" action="{% url 'admin_toggle_user' account.id %}">
                                     {% csrf_token %}
                                     {% if account.is_active and account.is_active_user %}
                                         <input type="hidden" name="action" value="deactivate">
-                                        <button type="submit" class="btn btn-outline-warning" {% if account.id == user.id %}disabled{% endif %}>
-                                            Deactivate
-                                        </button>
                                     {% else %}
                                         <input type="hidden" name="action" value="activate">
-                                        <button type="submit" class="btn btn-outline-success">
-                                            Activate
-                                        </button>
                                     {% endif %}
+                                    <button type="submit" title="Activate or deactivate" {% if account.id == user.id %}disabled{% endif %}>
+                                        <i class="bi bi-lock"></i>
+                                    </button>
                                 </form>
+                                <a href="{% url 'admin_reset_user_password' account.id %}" title="Reset password"><i class="bi bi-wrench"></i></a>
                                 <form method="post" action="{% url 'admin_delete_user' account.id %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-outline-danger" {% if account.id == user.id %}disabled{% endif %} onclick="return confirm('Delete {{ account.username }}? This cannot be undone.');">
-                                        Delete
+                                    <button type="submit" title="Delete" {% if account.id == user.id %}disabled{% endif %} onclick="return confirm('Delete {{ account.username }}? This cannot be undone.');">
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </div>
@@ -110,12 +134,79 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">No users found.</td>
+                        <td colspan="8" class="text-center text-muted py-4">No users found.</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
+    <div class="admin-table-footer">
+        <span>Showing 1 to {{ managed_users|length }} of {{ stats.total_users }} users</span>
+        <div class="admin-pagination">
+            <button type="button"><i class="bi bi-chevron-left"></i></button>
+            <button type="button" class="active">1</button>
+            <button type="button">2</button>
+            <button type="button">3</button>
+            <button type="button"><i class="bi bi-chevron-right"></i></button>
+        </div>
+    </div>
+</section>
 
+<section class="admin-panel" id="feedback">
+    <div class="admin-panel-header compact">
+        <div>
+            <h2>Feedback Management</h2>
+            <p>Manage and respond to user feedback</p>
+        </div>
+        <a class="admin-lite-btn" href="{% url 'admin_feedback' %}">
+            View All Feedback <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+    <div class="feedback-tabs">
+        <span class="active">All Feedback <strong>{{ feedback_items|length }}</strong></span>
+        <span>Pending <strong>{{ stats.new_feedback }}</strong></span>
+        <span>In Progress <strong>0</strong></span>
+        <span>Resolved <strong>0</strong></span>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in feedback_items %}
+                    <tr>
+                        <td>
+                            <div class="admin-person">
+                                <span>{{ item.user.username|default:"NA"|slice:":2"|upper }}</span>
+                                <strong>{{ item.user.username|default:"Anonymous" }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ item.subject }}</td>
+                        <td>{{ item.message|truncatechars:70 }}</td>
+                        <td>{{ item.created_at|date:"m/d/Y h:i A" }}</td>
+                        <td><span class="feedback-status {{ item.status }}">{{ item.get_status_display }}</span></td>
+                        <td class="text-end">
+                            <div class="admin-actions">
+                                <a href="{% url 'admin_feedback_detail' item.id %}" title="Read comment"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'admin_feedback_detail' item.id %}" title="Respond"><i class="bi bi-reply-fill"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No feedback found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

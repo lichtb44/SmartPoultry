@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 
 
 class Farm(models.Model):
@@ -40,6 +41,37 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"{self.subject} ({self.get_status_display()})"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class TransactionRecord(models.Model):
+    """Immutable ledger entry for financial transactions."""
+    TRANSACTION_TYPES = [
+        ('income', 'Income'),
+        ('expense', 'Expense'),
+    ]
+    ACTION_TYPES = [
+        ('created', 'Created'),
+        ('updated', 'Updated'),
+        ('deleted', 'Deleted'),
+    ]
+
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)
+    action = models.CharField(max_length=20, choices=ACTION_TYPES)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    description = models.CharField(max_length=255)
+    transaction_date = models.DateField()
+    source_content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    source_object_id = models.PositiveBigIntegerField(null=True, blank=True)
+    source_label = models.CharField(max_length=255, blank=True)
+    notes = models.TextField(blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} {self.amount} - {self.description}"
 
     class Meta:
         ordering = ['-created_at']

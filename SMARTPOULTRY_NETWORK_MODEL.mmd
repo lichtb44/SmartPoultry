@@ -1,0 +1,68 @@
+flowchart TB
+    subgraph L1["Client Layer"]
+        Browser["Web Browser<br/>Farm user and admin devices"]
+    end
+
+    subgraph L2["Access Layer"]
+        Network["Internet / LAN<br/>HTTP traffic"]
+        Security["Router / Firewall<br/>Host and port access"]
+    end
+
+    subgraph L3["Presentation Layer"]
+        Templates["Django Templates<br/>HTML pages"]
+        Static["Static Assets<br/>CSS, JavaScript, images"]
+        Charts["Browser Libraries<br/>Bootstrap and Chart.js"]
+    end
+
+    subgraph L4["Application Layer"]
+        Django["SMARTPOULTRY Django App"]
+        Auth["Authentication<br/>Login, logout, sessions"]
+        Views["Page Views<br/>Dashboard and management pages"]
+        API["REST API<br/>Accounts, flocks, inventory, finance, reports"]
+    end
+
+    subgraph L5["Business Logic Layer"]
+        FarmOps["Farm Operations<br/>Flocks, production, mortality"]
+        Finance["Finance Records<br/>Revenue and expenses"]
+        Analytics["Analytics and Forecasting"]
+        Notifications["Notifications and feedback"]
+    end
+
+    subgraph L6["Data Layer"]
+        Models["Django Models"]
+        Database[("SQLite Database<br/>db.sqlite3")]
+        Backups[("Backup Copy<br/>db.sqlite3.bak")]
+        MLFiles["ML Model Files<br/>ml_models"]
+    end
+
+    Browser --> Network
+    Network --> Security
+    Security --> Django
+
+    Django --> Templates
+    Templates --> Browser
+    Browser --> Static
+    Browser --> Charts
+
+    Django --> Auth
+    Django --> Views
+    Django --> API
+
+    Views --> FarmOps
+    Views --> Finance
+    Views --> Analytics
+    Views --> Notifications
+    API --> FarmOps
+    API --> Finance
+    API --> Analytics
+    API --> Notifications
+
+    Auth --> Models
+    FarmOps --> Models
+    Finance --> Models
+    Analytics --> Models
+    Notifications --> Models
+
+    Models --> Database
+    Database --> Backups
+    Analytics --> MLFiles

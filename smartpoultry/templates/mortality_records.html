@@ -6,6 +6,9 @@
         <h1>Mortality Records</h1>
         <p>Track mortality events, reasons, and flock impact</p>
     </div>
+    <a href="{% url 'mortality_record_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Add Record
+    </a>
 </div>
 
 <div class="panel-card">
@@ -19,6 +22,7 @@
                     <th>Quantity</th>
                     <th>Reason</th>
                     <th>Description</th>
+                    <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,10 +33,23 @@
                         <td>{{ record.quantity }}</td>
                         <td>{{ record.get_reason_display }}</td>
                         <td>{{ record.description|default:"-" }}</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'mortality_record_update' record.id %}" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <form method="post" action="{% url 'mortality_record_delete' record.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete this mortality record?');">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">No mortality records yet.</td>
+                        <td colspan="6" class="text-center text-muted py-4">No mortality records yet.</td>
                     </tr>
                 {% endfor %}
             </tbody>

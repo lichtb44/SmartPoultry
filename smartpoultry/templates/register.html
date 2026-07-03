@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,15 +27,24 @@
             margin-bottom: 30px;
         }
         .register-header h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             color: #667eea;
             font-weight: bold;
+        }
+        .register-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
     <div class="register-container">
         <div class="register-header">
-            <h1>🐔 SMARTPOULTRY</h1>
+            <h1><img src="{% static 'images/rooster-logo.svg' %}" alt="SMARTPOULTRY logo" class="register-logo"> SMARTPOULTRY</h1>
             <p>Create your farm account</p>
         </div>
         <form method="post">

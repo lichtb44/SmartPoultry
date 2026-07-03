@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block admin_title %}Feedback{% endblock %}
+
+{% block content %}
+<div class="admin-panel">
+    <div class="admin-panel-header compact">
+        <div>
+            <h2>Read Feedback</h2>
+            <p>Full user comment and admin response</p>
+        </div>
+        <a class="admin-lite-btn" href="{% url 'admin_feedback' %}">
+            <i class="bi bi-arrow-left"></i> Back to Feedback
+        </a>
+    </div>
+
+    <div class="p-4">
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                    <h3 class="h4 mb-2">{{ feedback.subject }}</h3>
+                    <div class="text-muted">
+                        From {{ feedback.user.username|default:"Anonymous" }}
+                        {% if feedback.user.email %} &middot; {{ feedback.user.email }}{% endif %}
+                        &middot; {{ feedback.created_at|date:"M d, Y h:i A" }}
+                        &middot; Rating {{ feedback.rating }}/5
+                    </div>
+                </div>
+                <span class="feedback-status {{ feedback.status }}">{{ feedback.get_status_display }}</span>
+            </div>
+        </div>
+
+        <div class="admin-comment-box mb-4">
+            <div class="text-muted small fw-bold text-uppercase mb-2">User Comment</div>
+            <p class="mb-0">{{ feedback.message }}</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label" for="status">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if feedback.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-9 mb-3">
+                    <label class="form-label" for="admin_response">Admin Response</label>
+                    <textarea class="form-control" id="admin_response" name="admin_response" rows="5">{{ feedback.admin_response }}</textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check2-circle me-1"></i> Save Response
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

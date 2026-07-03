@@ -1,0 +1,44 @@
+flowchart LR
+    subgraph Users["Users and Client Devices"]
+        Farmer["Farm Owner / User<br/>Laptop, tablet, or phone"]
+        Admin["Administrator<br/>Laptop or desktop"]
+    end
+
+    Internet["Internet / Local Network"]
+    Firewall["Router / Firewall"]
+
+    subgraph Server["SMARTPOULTRY Application Server"]
+        Web["Django Web Application<br/>HTTP service on port 8000"]
+        Static["Static and Media Files"]
+        API["REST API Endpoints"]
+        Auth["Authentication and User Sessions"]
+        ML["ML Models<br/>Prediction utilities"]
+    end
+
+    subgraph Data["Data Layer"]
+        DB[("SQLite Database<br/>db.sqlite3")]
+        Backup[("Database Backup<br/>db.sqlite3.bak")]
+    end
+
+    subgraph External["Optional External Services"]
+        BrowserCDN["CDN Assets<br/>Bootstrap, Icons, Chart.js"]
+        Email["Email / Notification Service"]
+    end
+
+    Farmer --> Internet
+    Admin --> Internet
+    Internet --> Firewall
+    Firewall --> Web
+
+    Web --> Static
+    Web --> API
+    Web --> Auth
+    Web --> ML
+
+    API --> DB
+    Auth --> DB
+    Web --> DB
+    DB --> Backup
+
+    Web -. loads frontend assets .-> BrowserCDN
+    Web -. sends alerts .-> Email
