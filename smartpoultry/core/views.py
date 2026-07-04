@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -539,7 +541,135 @@ def expenses_view(request):
 @login_required(login_url='login')
 def analytics_view(request):
     """Analytics and predictions view."""
-    return render(request, 'analytics.html')
+    from analytics.models import Prediction
+    from expenses.models import Expense
+    from production.models import ProductionRecord
+    from revenue.models import Revenue
+
+    today = timezone.localdate()
+    current_month_start = today.replace(day=1)
+
+    def add_months(value, months):
+        month_index = value.month - 1 + months
+        year = value.year + month_index // 12
+        month = month_index % 12 + 1
+        return value.replace(year=year, month=month, day=1)
+
+    def decimal_sum(queryset, field):
+        return queryset.aggregate(total=Sum(field))['total'] or 0
+
+    def month_key(value):
+        return value.date() if hasattr(value, 'date') else value
+
+    def trend_forecast(values, periods):
+        numeric_values = [float(value or 0) for value in values]
+        if not numeric_values:
+            return [0 for _ in range(periods)]
+        if len(numeric_values) == 1:
+            return [round(numeric_values[0], 2) for _ in range(periods)]
+
+        recent_window = numeric_values[-3:] if len(numeric_values) >= 3 else numeric_values
+        baseline = sum(recent_window) / len(recent_window)
+        slope = (numeric_values[-1] - numeric_values[0]) / max(len(numeric_values) - 1, 1)
+        return [round(max(0, baseline + slope * step), 2) for step in range(1, periods + 1)]
+
+    history_start = add_months(current_month_start, -5)
+    future_months = [add_months(current_month_start, offset) for offset in range(1, 7)]
+    history_months = [add_months(history_start, offset) for offset in range(6)]
+
+    revenue_by_month = {
+        month_key(item['month']): item['total'] or 0
+        for item in Revenue.objects.filter(date__gte=history_start)
+        .annotate(month=TruncMonth('date'))
+        .values('month')
+        .annotate(total=Sum('total_amount'))
+    }
+    expense_by_month = {
+        month_key(item['month']): item['total'] or 0
+        for item in Expense.objects.filter(date__gte=history_start)
+        .annotate(month=TruncMonth('date'))
+        .values('month')
+        .annotate(total=Sum('amount'))
+    }
+
+    actual_revenue = [float(revenue_by_month.get(month, 0)) for month in history_months]
+    actual_expenses = [float(expense_by_month.get(month, 0)) for month in history_months]
+    actual_profit = [
+        round(actual_revenue[index] - actual_expenses[index], 2)
+        for index in range(len(history_months))
+    ]
+
+    predicted_revenue = trend_forecast(actual_revenue, 6)
+    predicted_expenses = trend_forecast(actual_expenses, 6)
+    predicted_profit = [
+        round(predicted_revenue[index] - predicted_expenses[index], 2)
+        for index in range(len(future_months))
+    ]
+
+    week_starts = [today - timedelta(days=today.weekday() + (5 - index) * 7) for index in range(6)]
+    production_by_week = []
+    for week_start in week_starts:
+        week_end = week_start + timedelta(days=7)
+        production_by_week.append(float(decimal_sum(
+            ProductionRecord.objects.filter(
+                product_type='eggs',
+                date__gte=week_start,
+                date__lt=week_end,
+            ),
+            'quantity',
+        )))
+    predicted_production = trend_forecast(production_by_week, 6)
+
+    method = 'SQLite recent trend forecast'
+    for index, forecast_month in enumerate(future_months):
+        Prediction.objects.update_or_create(
+            prediction_type='profit',
+            forecast_date=forecast_month,
+            defaults={
+                'predicted_value': predicted_profit[index],
+                'method': method,
+                'accuracy_percentage': 0,
+            },
+        )
+        Prediction.objects.update_or_create(
+            prediction_type='eggs',
+            forecast_date=forecast_month,
+            defaults={
+                'predicted_value': predicted_production[index],
+                'method': method,
+                'accuracy_percentage': 0,
+            },
+        )
+
+    latest_predictions = Prediction.objects.filter(
+        prediction_type__in=['profit', 'eggs'],
+        forecast_date__in=future_months,
+    ).order_by('forecast_date', 'prediction_type')
+
+    all_months = history_months + future_months
+    chart_data = {
+        'actualVsPredicted': {
+            'labels': [capfirst(month.strftime('%b %Y')) for month in all_months],
+            'actualRevenue': actual_revenue + [None for _ in future_months],
+            'predictedRevenue': [None for _ in history_months] + predicted_revenue,
+        },
+        'profit': {
+            'labels': [capfirst(month.strftime('%b %Y')) for month in future_months],
+            'values': predicted_profit,
+        },
+        'production': {
+            'labels': [f'Week {index}' for index in range(1, 7)],
+            'actual': production_by_week,
+            'predicted': predicted_production,
+        },
+    }
+
+    return render(request, 'analytics.html', {
+        'chart_data': chart_data,
+        'latest_predictions': latest_predictions,
+        'prediction_method': method,
+        'last_updated': timezone.now(),
+    })
 
 
 @login_required(login_url='login')

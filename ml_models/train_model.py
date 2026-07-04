@@ -24,6 +24,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 import django
 django.setup()
 
+from django.db.models import Sum
 from revenue.models import Revenue
 from expenses.models import Expense
 from analytics.models import Prediction
@@ -55,11 +56,11 @@ class PredictionModelTrainer:
         
         while current_date <= end_date:
             daily_revenue = revenues.filter(date=current_date).aggregate(
-                total=models.Sum('total_amount')
+                total=Sum('total_amount')
             )['total'] or 0
             
             daily_expense = expenses.filter(date=current_date).aggregate(
-                total=models.Sum('amount')
+                total=Sum('amount')
             )['total'] or 0
             
             profit = daily_revenue - daily_expense
@@ -121,6 +122,8 @@ class PredictionModelTrainer:
         # Save model
         model_path = os.path.join(self.model_dir, 'profit_prediction.pkl')
         joblib.dump(self.profit_model, model_path)
+        scaler_path = os.path.join(self.model_dir, 'profit_scaler.pkl')
+        joblib.dump(self.scaler, scaler_path)
         print(f"💾 Model saved to {model_path}")
         
         return True
@@ -173,6 +176,9 @@ class PredictionModelTrainer:
         self.profit_model = joblib.load(
             os.path.join(self.model_dir, 'profit_prediction.pkl')
         )
+        scaler_path = os.path.join(self.model_dir, 'profit_scaler.pkl')
+        if os.path.exists(scaler_path):
+            self.scaler = joblib.load(scaler_path)
         
         predictions = []
         current_date = datetime.now().date()

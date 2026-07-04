@@ -90,6 +90,73 @@ function formatDate(dateString) {
     });
 }
 
+function parseScenarioPercent(value) {
+    const numericValue = parseFloat(String(value).replace('%', '').replace('+', '').trim());
+    return Number.isFinite(numericValue) ? numericValue / 100 : 0;
+}
+
+function parseScenarioMoney(value) {
+    const numericValue = parseFloat(String(value || '0').replace(/,/g, ''));
+    return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
+function updateScenarioPanel(panel) {
+    const scenarioType = panel.querySelector('[data-scenario-type]');
+    const scenarioChange = panel.querySelector('[data-scenario-change]');
+    const percent = parseScenarioPercent(scenarioChange ? scenarioChange.value : 0);
+
+    let revenue = parseScenarioMoney(panel.dataset.baseRevenue);
+    let expenses = parseScenarioMoney(panel.dataset.baseExpenses);
+    const feedCost = parseScenarioMoney(panel.dataset.baseFeedCost);
+    const feedBaseline = feedCost > 0 ? feedCost : expenses;
+
+    switch (scenarioType ? scenarioType.value : '') {
+        case 'feed_price_increase':
+            expenses += feedBaseline * percent;
+            break;
+        case 'lower_mortality':
+            revenue += revenue * percent * 0.5;
+            expenses -= expenses * percent * 0.1;
+            break;
+        case 'mortality_increase':
+            revenue -= revenue * percent * 0.35;
+            expenses += expenses * percent * 0.12;
+            break;
+        case 'egg_price_increase':
+            revenue += revenue * percent;
+            break;
+        default:
+            break;
+    }
+
+    const profit = revenue - expenses;
+    const values = { profit, revenue, expenses };
+
+    panel.querySelectorAll('[data-result]').forEach(result => {
+        const key = result.dataset.result;
+        result.textContent = formatCurrency(values[key] || 0);
+        if (key === 'profit') {
+            result.classList.toggle('text-success', profit >= 0);
+            result.classList.toggle('text-danger', profit < 0);
+        }
+    });
+
+    panel.querySelectorAll('[data-scenario-label]').forEach(label => {
+        label.textContent = label.textContent.replace('Current', 'Expected');
+    });
+}
+
+function initScenarioPanels() {
+    document.querySelectorAll('.scenario-panel').forEach(panel => {
+        const applyButton = panel.querySelector('[data-apply-scenario]');
+        if (!applyButton) {
+            return;
+        }
+
+        applyButton.addEventListener('click', () => updateScenarioPanel(panel));
+    });
+}
+
 // Initialize tooltips (Bootstrap)
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all tooltips
@@ -98,6 +165,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
+
+document.addEventListener('DOMContentLoaded', initScenarioPanels);
 
 // Auto-hide alerts after 5 seconds
 document.addEventListener('DOMContentLoaded', function() {

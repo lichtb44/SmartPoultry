@@ -5,10 +5,11 @@
 
 <div class="card mb-4">
     <div class="card-header bg-info text-white">
-        <h5>Prediction Models</h5>
+        <h5>Actual Revenue vs Forecast</h5>
     </div>
     <div class="card-body">
         <canvas id="predictionChart"></canvas>
+        <small class="text-muted d-block mt-3">Method: {{ prediction_method }}. Updated {{ last_updated|date:"M d, Y H:i" }}.</small>
     </div>
 </div>
 
@@ -35,27 +36,73 @@
     </div>
 </div>
 
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Saved Forecast Records</h5>
+    </div>
+    <div class="card-body table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Predicted Value</th>
+                    <th>Actual Value</th>
+                    <th>Method</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prediction in latest_predictions %}
+                    <tr>
+                        <td>{{ prediction.forecast_date }}</td>
+                        <td>{{ prediction.get_prediction_type_display }}</td>
+                        <td>{{ prediction.predicted_value|floatformat:2 }}</td>
+                        <td>
+                            {% if prediction.actual_value is not None %}
+                                {{ prediction.actual_value|floatformat:2 }}
+                            {% else %}
+                                Pending
+                            {% endif %}
+                        </td>
+                        <td>{{ prediction.method }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-muted">No forecast records available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
+{{ chart_data|json_script:"analytics-chart-data" }}
 <script>
+    function getAnalyticsChartData() {
+        return JSON.parse(document.getElementById('analytics-chart-data').textContent);
+    }
+
     function initPredictionChart() {
+        const chartData = getAnalyticsChartData();
         const ctx = document.getElementById('predictionChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                labels: chartData.actualVsPredicted.labels,
                 datasets: [
                     {
                         label: 'Actual Revenue',
-                        data: [65000, 78000, 82000, 75000, 90000, 125000, null, null],
+                        data: chartData.actualVsPredicted.actualRevenue,
                         borderColor: 'rgb(75, 192, 192)',
                         backgroundColor: 'rgba(75, 192, 192, 0.1)',
                         tension: 0.1
                     },
                     {
                         label: 'Predicted Revenue',
-                        data: [null, null, null, null, null, 125000, 135000, 145000],
+                        data: chartData.actualVsPredicted.predictedRevenue,
                         borderColor: 'rgba(255, 99, 132, 0.8)',
                         borderDash: [5, 5],
                         backgroundColor: 'rgba(255, 99, 132, 0.1)',
@@ -67,7 +114,7 @@
                 responsive: true,
                 plugins: {
                     legend: {
-                        position: 'top',
+                        position: 'top'
                     }
                 }
             }
@@ -75,14 +122,15 @@
     }
 
     function initProfitPredictionChart() {
+        const chartData = getAnalyticsChartData();
         const ctx = document.getElementById('profitPredictionChart').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: chartData.profit.labels,
                 datasets: [{
-                    label: 'Predicted Profit (₱)',
-                    data: [55000, 65000, 58000, 70000, 75000, 85000],
+                    label: 'Predicted Profit (PHP)',
+                    data: chartData.profit.values,
                     backgroundColor: 'rgba(75, 192, 75, 0.6)',
                     borderColor: 'rgb(75, 192, 75)',
                     borderWidth: 1
@@ -92,19 +140,31 @@
     }
 
     function initProductionForecastChart() {
+        const chartData = getAnalyticsChartData();
         const ctx = document.getElementById('productionForecastChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
-                datasets: [{
-                    label: 'Eggs Production (crates)',
-                    data: [150, 165, 170, 175, 180, 190],
-                    borderColor: 'rgb(255, 193, 7)',
-                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                    tension: 0.1,
-                    fill: true
-                }]
+                labels: chartData.production.labels,
+                datasets: [
+                    {
+                        label: 'Actual Eggs',
+                        data: chartData.production.actual,
+                        borderColor: 'rgb(13, 110, 253)',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    },
+                    {
+                        label: 'Forecast Eggs',
+                        data: chartData.production.predicted,
+                        borderColor: 'rgb(255, 193, 7)',
+                        borderDash: [5, 5],
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }
+                ]
             }
         });
     }

@@ -111,20 +111,24 @@
 </section>
 
 <section class="bottom-grid">
-    <div class="panel-card">
+    <div class="panel-card scenario-panel"
+         data-base-profit="{{ metrics.profit|floatformat:2 }}"
+         data-base-revenue="{{ metrics.revenue|floatformat:2 }}"
+         data-base-expenses="{{ metrics.expenses|floatformat:2 }}"
+         data-base-feed-cost="{{ metrics.feed_cost|floatformat:2 }}">
         <div class="panel-title">What-if Scenario Analysis</div>
         <div class="scenario-controls">
-            <select class="form-select form-select-sm">
-                <option>Feed Price Increase</option>
-                <option>Lower Mortality Rate</option>
+            <select class="form-select form-select-sm" data-scenario-type>
+                <option value="feed_price_increase">Feed Price Increase</option>
+                <option value="lower_mortality">Lower Mortality Rate</option>
             </select>
-            <input class="form-control form-control-sm" value="+10%">
-            <button class="btn btn-primary btn-sm">Apply</button>
+            <input class="form-control form-control-sm" value="+10%" data-scenario-change aria-label="Scenario change">
+            <button class="btn btn-primary btn-sm" type="button" data-apply-scenario>Apply</button>
         </div>
         <div class="scenario-results">
-            <div><span>Current Profit</span><strong class="{% if metrics.profit < 0 %}text-danger{% else %}text-success{% endif %}">&#8369;{{ metrics.profit|floatformat:2 }}</strong></div>
-            <div><span>Current Revenue</span><strong>&#8369;{{ metrics.revenue|floatformat:2 }}</strong></div>
-            <div><span>Current Expenses</span><strong>&#8369;{{ metrics.expenses|floatformat:2 }}</strong></div>
+            <div><span data-scenario-label>Current Profit</span><strong data-result="profit" class="{% if metrics.profit < 0 %}text-danger{% else %}text-success{% endif %}">&#8369;{{ metrics.profit|floatformat:2 }}</strong></div>
+            <div><span data-scenario-label>Current Revenue</span><strong data-result="revenue">&#8369;{{ metrics.revenue|floatformat:2 }}</strong></div>
+            <div><span data-scenario-label>Current Expenses</span><strong data-result="expenses">&#8369;{{ metrics.expenses|floatformat:2 }}</strong></div>
         </div>
     </div>
 

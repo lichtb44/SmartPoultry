@@ -831,9 +831,14 @@ body {
 
 .scenario-controls {
     display: grid;
-    grid-template-columns: 1fr 90px auto;
+    grid-template-columns: minmax(180px, 1fr) minmax(84px, 100px) minmax(76px, auto);
     gap: 8px;
     margin-bottom: 12px;
+}
+
+.scenario-controls .btn {
+    min-width: 76px;
+    white-space: nowrap;
 }
 
 .scenario-results {
@@ -1036,5 +1041,13 @@ footer {
     .page-heading {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .scenario-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .scenario-controls .btn {
+        width: 100%;
     }
 }

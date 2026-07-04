@@ -30,9 +30,13 @@ class MLPredictor:
         """Load trained models from disk."""
         profit_path = os.path.join(self.model_dir, 'profit_prediction.pkl')
         revenue_path = os.path.join(self.model_dir, 'revenue_forecast.pkl')
+        scaler_path = os.path.join(self.model_dir, 'profit_scaler.pkl')
         
         if os.path.exists(profit_path):
             self.profit_model = joblib.load(profit_path)
+        
+        if os.path.exists(scaler_path):
+            self.scaler = joblib.load(scaler_path)
         
         if os.path.exists(revenue_path):
             self.revenue_model = joblib.load(revenue_path)
@@ -41,7 +45,10 @@ class MLPredictor:
         """Predict profit using trained model."""
         if not self.profit_model:
             return None
-        return self.profit_model.predict([features])[0]
+        model_features = [features]
+        if self.scaler:
+            model_features = self.scaler.transform(model_features)
+        return self.profit_model.predict(model_features)[0]
     
     def predict_revenue(self, features):
         """Predict revenue using trained model."""
