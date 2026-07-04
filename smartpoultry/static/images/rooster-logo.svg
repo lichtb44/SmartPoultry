@@ -1,33 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="SMARTPOULTRY poultry farm analytics logo">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="SMARTPOULTRY logo">
   <defs>
-    <linearGradient id="badge" x1="36" y1="22" x2="220" y2="234" gradientUnits="userSpaceOnUse">
+    <linearGradient id="badge-bg" x1="34" y1="22" x2="220" y2="232" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#eef6ff"/>
+      <stop offset="1" stop-color="#edf6ff"/>
     </linearGradient>
-    <linearGradient id="bulb" x1="177" y1="37" x2="210" y2="83" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#ffd45a"/>
-      <stop offset="1" stop-color="#f5a400"/>
+    <linearGradient id="navy" x1="62" y1="62" x2="180" y2="198" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0d3b66"/>
+      <stop offset="1" stop-color="#08233f"/>
     </linearGradient>
   </defs>
-  <rect x="10" y="10" width="236" height="236" rx="52" fill="url(#badge)"/>
-  <rect x="10" y="10" width="236" height="236" rx="52" fill="none" stroke="#d9e8f8" stroke-width="4"/>
+  <rect x="10" y="10" width="236" height="236" rx="54" fill="url(#badge-bg)"/>
+  <rect x="10" y="10" width="236" height="236" rx="54" fill="none" stroke="#d8e8f8" stroke-width="5"/>
 
-  <path d="M42 203c36-16 78-26 126-30 21-2 39-1 54 2" fill="none" stroke="#59361f" stroke-width="11" stroke-linecap="round"/>
-  <path d="M97 170l54-38 57 38" fill="none" stroke="#59361f" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M124 164v-23h54v30" fill="#fff7ea" stroke="#59361f" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M146 155h10m13 0h10m-33 16h10m13 0h10" stroke="#59361f" stroke-width="6" stroke-linecap="round"/>
+  <path d="M70 196c-13-52-2-104 30-139 25-27 62-36 96-21-5 28-22 50-48 64-29 15-51 44-78 96Z" fill="url(#navy)"/>
+  <path d="M89 99c16-28 49-43 82-36 25 5 44 22 52 45-20-5-39-4-57 3-31 12-57 9-77-12Z" fill="#ffffff"/>
+  <circle cx="159" cy="88" r="9" fill="#1f140d"/>
 
-  <path d="M61 193c-14-51-3-109 30-145" fill="none" stroke="#59361f" stroke-width="11" stroke-linecap="round"/>
-  <path d="M74 85c18-24 51-35 80-24 24 9 37 30 31 53-6 26-34 41-64 35-27-6-43-24-47-64Z" fill="#ffffff"/>
-  <path d="M76 85c20-27 52-37 80-25 18 8 30 24 32 43" fill="none" stroke="#59361f" stroke-width="7" stroke-linecap="round"/>
-  <path d="M63 74c4-24 23-32 43-16 3-29 31-40 51-15 12 16 13 35 2 53-27-17-60-23-96-22Z" fill="#dc181f"/>
-  <path d="M132 40c14-11 31-5 35 15 6-14 23-12 30 3 6 15 1 33-14 47-11-29-28-50-51-65Z" fill="#dc181f"/>
-  <path d="M184 99c17 5 33 17 43 33-21-1-40 5-57 18-1-21 4-38 14-51Z" fill="#f7b21b"/>
-  <path d="M155 147c-14 18-18 38-11 59 15 0 25-10 30-29 8 18 21 24 36 14-2-22-16-39-42-54Z" fill="#dc181f"/>
-  <circle cx="138" cy="91" r="9" fill="#28180f"/>
+  <path d="M77 80c4-27 25-38 49-22 5-33 36-45 60-18 15 17 18 40 7 64-29-20-68-28-116-24Z" fill="#dc1821"/>
+  <path d="M186 101c22 5 43 20 56 41-28-2-53 4-75 19-2-25 5-45 19-60Z" fill="#f6b21a"/>
+  <path d="M146 139c-18 21-24 46-16 73 19 1 33-11 39-35 11 22 27 30 47 18-2-29-20-51-54-68Z" fill="#dc1821"/>
 
-  <path d="M175 48c0-18 15-33 34-33s34 15 34 33c0 12-7 23-17 29-5 3-8 8-8 14h-19c0-6-3-11-8-14-10-6-16-17-16-29Z" fill="url(#bulb)"/>
-  <path d="M196 93h27m-24 11h21m-16 11h11" fill="none" stroke="#2c1d13" stroke-width="6" stroke-linecap="round"/>
-  <path d="M208 88V66m10 22V66m-10 0c0-7 10-7 10 0" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M209 8V0m-34 24-8-8m76 8 8-8m-93 34h-11" fill="none" stroke="#f7b21b" stroke-width="7" stroke-linecap="round"/>
+  <path d="M66 205c32-17 71-28 117-33 19-2 37-2 53 0" fill="none" stroke="#5a351c" stroke-width="11" stroke-linecap="round"/>
+  <path d="M106 170l45-31 47 31" fill="none" stroke="#5a351c" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M128 164v-19h46v25" fill="#fff8ee" stroke="#5a351c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <path d="M92 210l31-31 23 17 36-49" fill="none" stroke="#16a34a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="92" cy="210" r="6" fill="#16a34a"/>
+  <circle cx="123" cy="179" r="6" fill="#16a34a"/>
+  <circle cx="146" cy="196" r="6" fill="#16a34a"/>
+  <circle cx="182" cy="147" r="6" fill="#16a34a"/>
 </svg>
