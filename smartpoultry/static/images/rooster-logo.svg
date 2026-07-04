@@ -1,20 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="SMARTPOULTRY logo">
-  <rect width="160" height="160" fill="#ffffff"/>
-  <path d="M43 112c18-7 40-12 66-14" fill="none" stroke="#4d321d" stroke-width="3.6" stroke-linecap="round"/>
-  <path d="M66 96l28-19 30 20" fill="none" stroke="#4d321d" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M80 93V80h29v17" fill="#fff" stroke="#4d321d" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M109 88l13 9v11" fill="none" stroke="#4d321d" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M92 89h4m8 0h4m-16 8h4m8 0h4" stroke="#4d321d" stroke-width="3.2" stroke-linecap="round"/>
-  <path d="M42 103c-10-32-3-66 18-89" fill="none" stroke="#4d321d" stroke-width="5" stroke-linecap="round"/>
-  <path d="M50 44c11-16 31-23 49-15 14 6 22 19 19 33-3 16-20 26-39 22-17-4-27-16-29-40Z" fill="#ffffff"/>
-  <path d="M51 44c12-17 32-24 49-16 11 5 19 15 21 27" fill="none" stroke="#4d321d" stroke-width="3.8" stroke-linecap="round"/>
-  <path d="M43 37c2-15 14-21 28-11 2-18 19-25 33-10 9 10 10 23 3 38-17-11-38-17-64-17Z" fill="#d71920"/>
-  <path d="M83 16c9-7 20-3 23 10 4-10 15-9 20 1 5 11 1 23-10 34-7-19-18-34-33-45Z" fill="#d71920"/>
-  <path d="M117 56c12 3 23 11 30 24-15 0-29 4-41 12-1-15 3-27 11-36Z" fill="#f3aa17"/>
-  <path d="M98 88c-9 11-12 24-8 38 10 0 17-7 21-20 5 12 13 16 24 10-1-15-10-27-27-37Z" fill="#d71920"/>
-  <circle cx="88" cy="47" r="5.8" fill="#22150d"/>
-  <path d="M104 33c0-11 9-20 20-20s20 9 20 20c0 7-4 13-10 17-3 2-5 5-5 9h-12c0-4-2-7-5-9-5-4-8-10-8-17Z" fill="#f6b21a"/>
-  <path d="M116 61h16m-14 7h12m-9 7h6" fill="none" stroke="#2b1b10" stroke-width="3.8" stroke-linecap="round"/>
-  <path d="M123 59V46m7 13V46m-7 0c0-5 7-5 7 0" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M124 8V2m-20 14-5-5m51 5 5-5m-62 22h-8m75 0h-8" fill="none" stroke="#f6b21a" stroke-width="4" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SMARTPOULTRY logo">
+  <rect width="512" height="512" fill="#ffffff"/>
+  <path d="M148 360c-26-88-8-180 52-239" fill="none" stroke="#4f321d" stroke-width="10" stroke-linecap="round"/>
+  <path d="M126 388c67-22 142-34 226-33" fill="none" stroke="#4f321d" stroke-width="8" stroke-linecap="round"/>
+  <path d="M216 331l82-57 88 59" fill="none" stroke="#4f321d" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M258 324v-39h80v48" fill="#ffffff" stroke="#4f321d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M337 304l39 26v32" fill="none" stroke="#4f321d" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M289 315h11m21 0h11m-43 22h11m21 0h11" stroke="#4f321d" stroke-width="8" stroke-linecap="round"/>
+  <path d="M179 203c27-42 80-59 122-37 28 15 42 44 32 72-12 31-48 47-83 34-35-13-53-38-71-69Z" fill="#ffffff"/>
+  <path d="M180 202c26-51 84-72 130-42 17 11 28 28 33 47" fill="none" stroke="#4f321d" stroke-width="7" stroke-linecap="round"/>
+  <path d="M164 188c2-34 28-49 60-29 7-46 51-62 83-26 19 22 22 54 7 85-41-28-92-37-150-30Z" fill="#df111b"/>
+  <path d="M268 131c20-17 43-8 51 18 8-20 32-19 41 2 10 24 1 51-24 74-13-42-36-73-68-94Z" fill="#df111b"/>
+  <path d="M338 207c27 6 53 23 69 49-34 0-63 9-88 28-3-31 3-57 19-77Z" fill="#f6b21a"/>
+  <path d="M300 270c-25 30-33 66-22 106 23 2 39-16 47-53 13 32 34 44 61 27-3-39-25-69-68-90Z" fill="#df111b"/>
+  <circle cx="278" cy="202" r="12" fill="#2b1b10"/>
+  <path d="M323 115c0-28 22-50 50-50s50 22 50 50c0 18-10 33-24 42-7 4-10 11-10 18h-32c0-7-3-14-10-18-15-9-24-24-24-42Z" fill="#f7b21a"/>
+  <path d="M354 179h39m-34 14h30m-24 14h19" fill="none" stroke="#2b1b10" stroke-width="7" stroke-linecap="round"/>
+  <path d="M372 174v-31m17 31v-31m-17 0c0-11 17-11 17 0" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M374 47V34m-51 40-11-11m124 11 11-11m-147 54h-17m183 0h-17" fill="none" stroke="#f7b21a" stroke-width="8" stroke-linecap="round"/>
 </svg>
