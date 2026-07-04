@@ -36,7 +36,7 @@ class MortalityRecordViewSet(viewsets.ModelViewSet):
             "Successfully added mortality record",
             (
                 f"Recorded {record.quantity} mortality for flock {record.flock.flock_id} due to "
-                f"{record.get_reason_display().lower()}. Remaining flock quantity: {record.flock.quantity}."
+                f"{record.get_reason_display().lower()}."
             ),
             record,
         )
