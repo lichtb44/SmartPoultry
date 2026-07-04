@@ -1,19 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="SMARTPOULTRY chicken farm lightbulb logo">
-  <rect width="240" height="240" rx="32" fill="#ffffff"/>
-  <path d="M42 190c28-13 62-22 101-27 28-4 55-2 78 5" fill="none" stroke="#5a351c" stroke-width="10" stroke-linecap="round"/>
-  <path d="M97 163l50-34 52 34" fill="none" stroke="#5a351c" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M121 157v-22h53v30" fill="none" stroke="#5a351c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M143 153h10m12 0h10m-32 16h10m12 0h10" stroke="#5a351c" stroke-width="7" stroke-linecap="round"/>
-  <path d="M52 182c-15-50-5-104 28-139" fill="none" stroke="#5a351c" stroke-width="10" stroke-linecap="round"/>
-  <path d="M68 84c18-25 51-36 80-24 22 9 35 29 30 51-5 25-31 40-60 34-27-5-43-23-50-61Z" fill="#ffffff"/>
-  <path d="M70 83c18-27 50-38 78-27 18 7 29 22 32 39" fill="none" stroke="#5a351c" stroke-width="7" stroke-linecap="round"/>
-  <path d="M58 72c1-24 19-34 40-20 2-27 27-39 49-17 14 14 17 34 7 54-26-17-58-22-96-17Z" fill="#e1191d"/>
-  <path d="M126 36c14-11 30-4 35 15 5-15 23-14 30 1 7 17 2 35-13 49-11-29-29-51-52-65Z" fill="#e1191d"/>
-  <path d="M178 94c18 5 34 17 44 33-21-1-40 5-57 17-1-20 3-37 13-50Z" fill="#f6b21a"/>
-  <path d="M149 145c-14 17-18 37-12 57 15 1 25-9 30-27 8 17 20 23 35 14-1-22-14-39-39-54Z" fill="#e1191d"/>
-  <circle cx="131" cy="88" r="9" fill="#2a1a10"/>
-  <path d="M166 41c0-18 14-32 32-32s32 14 32 32c0 11-6 21-15 27-5 3-7 7-7 12h-21c0-5-2-9-7-12-9-6-14-16-14-27Z" fill="#f6b21a"/>
-  <path d="M186 82h25m-22 11h19m-15 10h11" fill="none" stroke="#2a1a10" stroke-width="6" stroke-linecap="round"/>
-  <path d="M198 78V57m10 21V57m-10 0c0-7 10-7 10 0" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M198 16V6m-31 18-8-8m76 8 8-8m-91 25h-13m112 0h-13" fill="none" stroke="#f6b21a" stroke-width="7" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="SMARTPOULTRY poultry farm analytics logo">
+  <defs>
+    <linearGradient id="badge" x1="36" y1="22" x2="220" y2="234" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef6ff"/>
+    </linearGradient>
+    <linearGradient id="bulb" x1="177" y1="37" x2="210" y2="83" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffd45a"/>
+      <stop offset="1" stop-color="#f5a400"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="236" height="236" rx="52" fill="url(#badge)"/>
+  <rect x="10" y="10" width="236" height="236" rx="52" fill="none" stroke="#d9e8f8" stroke-width="4"/>
+
+  <path d="M42 203c36-16 78-26 126-30 21-2 39-1 54 2" fill="none" stroke="#59361f" stroke-width="11" stroke-linecap="round"/>
+  <path d="M97 170l54-38 57 38" fill="none" stroke="#59361f" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M124 164v-23h54v30" fill="#fff7ea" stroke="#59361f" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M146 155h10m13 0h10m-33 16h10m13 0h10" stroke="#59361f" stroke-width="6" stroke-linecap="round"/>
+
+  <path d="M61 193c-14-51-3-109 30-145" fill="none" stroke="#59361f" stroke-width="11" stroke-linecap="round"/>
+  <path d="M74 85c18-24 51-35 80-24 24 9 37 30 31 53-6 26-34 41-64 35-27-6-43-24-47-64Z" fill="#ffffff"/>
+  <path d="M76 85c20-27 52-37 80-25 18 8 30 24 32 43" fill="none" stroke="#59361f" stroke-width="7" stroke-linecap="round"/>
+  <path d="M63 74c4-24 23-32 43-16 3-29 31-40 51-15 12 16 13 35 2 53-27-17-60-23-96-22Z" fill="#dc181f"/>
+  <path d="M132 40c14-11 31-5 35 15 6-14 23-12 30 3 6 15 1 33-14 47-11-29-28-50-51-65Z" fill="#dc181f"/>
+  <path d="M184 99c17 5 33 17 43 33-21-1-40 5-57 18-1-21 4-38 14-51Z" fill="#f7b21b"/>
+  <path d="M155 147c-14 18-18 38-11 59 15 0 25-10 30-29 8 18 21 24 36 14-2-22-16-39-42-54Z" fill="#dc181f"/>
+  <circle cx="138" cy="91" r="9" fill="#28180f"/>
+
+  <path d="M175 48c0-18 15-33 34-33s34 15 34 33c0 12-7 23-17 29-5 3-8 8-8 14h-19c0-6-3-11-8-14-10-6-16-17-16-29Z" fill="url(#bulb)"/>
+  <path d="M196 93h27m-24 11h21m-16 11h11" fill="none" stroke="#2c1d13" stroke-width="6" stroke-linecap="round"/>
+  <path d="M208 88V66m10 22V66m-10 0c0-7 10-7 10 0" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M209 8V0m-34 24-8-8m76 8 8-8m-93 34h-11" fill="none" stroke="#f7b21b" stroke-width="7" stroke-linecap="round"/>
 </svg>
