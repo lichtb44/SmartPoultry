@@ -96,8 +96,9 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # Using SQLite for development (default), PostgreSQL for production
 DATABASE_URL = os.getenv('DATABASE_URL')
-if DATABASE_URL:
-    database_url = urlparse(DATABASE_URL)
+database_url = urlparse(DATABASE_URL) if DATABASE_URL else None
+database_url_is_local = database_url and database_url.hostname in ('localhost', '127.0.0.1', '::1')
+if DATABASE_URL and not (RUNNING_ON_RENDER and database_url_is_local):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
