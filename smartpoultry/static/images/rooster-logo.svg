@@ -1,20 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="SMARTPOULTRY chicken farm lightbulb logo">
-  <rect width="256" height="256" rx="28" fill="#ffffff"/>
-  <path d="M35 214c33-14 73-24 120-30 31-4 58-2 79 5" fill="none" stroke="#5a371e" stroke-width="8" stroke-linecap="round"/>
-  <path d="M97 184l55-39 59 39" fill="none" stroke="#5a371e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M123 177v-23h59v31" fill="none" stroke="#5a371e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M181 166l25 17v22" fill="none" stroke="#5a371e" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M143 174h8m15 0h8m-31 15h8m15 0h8" stroke="#5a371e" stroke-width="7" stroke-linecap="round"/>
-  <path d="M42 203c-14-54-4-113 27-152" fill="none" stroke="#5a371e" stroke-width="8" stroke-linecap="round"/>
-  <path d="M65 89c18-25 49-36 78-27 22 7 37 25 38 45 1 26-23 45-52 43-29-2-51-20-64-61Z" fill="#ffffff"/>
-  <path d="M66 90c18-30 52-43 83-32 19 7 32 23 36 43" fill="none" stroke="#5a371e" stroke-width="6" stroke-linecap="round"/>
-  <path d="M55 77c1-25 19-35 42-22 0-30 25-44 49-20 15 15 19 36 10 58-27-18-62-24-101-16Z" fill="#e20f17"/>
-  <path d="M125 35c16-14 35-7 41 15 6-17 25-17 33 0 8 18 2 38-15 55-10-31-29-54-59-70Z" fill="#e20f17"/>
-  <path d="M180 100c19 4 37 16 48 33-22 0-42 6-60 18-2-20 2-37 12-51Z" fill="#f6b21a"/>
-  <path d="M150 154c-16 20-21 42-14 65 17 1 28-9 33-30 9 19 22 26 39 16 0-25-14-45-42-62Z" fill="#e20f17"/>
-  <circle cx="134" cy="92" r="9" fill="#2b1c11"/>
-  <path d="M176 36c0-17 14-31 31-31s31 14 31 31c0 11-6 20-15 26-4 2-6 6-6 10h-20c0-4-2-8-6-10-9-6-15-15-15-26Z" fill="#f6b21a"/>
-  <path d="M195 74h25m-22 10h19m-15 10h11" fill="none" stroke="#2b1c11" stroke-width="5" stroke-linecap="round"/>
-  <path d="M207 72V53m10 19V53m-10 0c0-7 10-7 10 0" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M207 14V4m-29 20-8-8m73 8 8-8m-88 29h-12m101 0h-12" fill="none" stroke="#f6b21a" stroke-width="6" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="SMARTPOULTRY chicken farm lightbulb logo">
+  <rect width="240" height="240" rx="32" fill="#ffffff"/>
+  <path d="M42 190c28-13 62-22 101-27 28-4 55-2 78 5" fill="none" stroke="#5a351c" stroke-width="10" stroke-linecap="round"/>
+  <path d="M97 163l50-34 52 34" fill="none" stroke="#5a351c" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M121 157v-22h53v30" fill="none" stroke="#5a351c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M143 153h10m12 0h10m-32 16h10m12 0h10" stroke="#5a351c" stroke-width="7" stroke-linecap="round"/>
+  <path d="M52 182c-15-50-5-104 28-139" fill="none" stroke="#5a351c" stroke-width="10" stroke-linecap="round"/>
+  <path d="M68 84c18-25 51-36 80-24 22 9 35 29 30 51-5 25-31 40-60 34-27-5-43-23-50-61Z" fill="#ffffff"/>
+  <path d="M70 83c18-27 50-38 78-27 18 7 29 22 32 39" fill="none" stroke="#5a351c" stroke-width="7" stroke-linecap="round"/>
+  <path d="M58 72c1-24 19-34 40-20 2-27 27-39 49-17 14 14 17 34 7 54-26-17-58-22-96-17Z" fill="#e1191d"/>
+  <path d="M126 36c14-11 30-4 35 15 5-15 23-14 30 1 7 17 2 35-13 49-11-29-29-51-52-65Z" fill="#e1191d"/>
+  <path d="M178 94c18 5 34 17 44 33-21-1-40 5-57 17-1-20 3-37 13-50Z" fill="#f6b21a"/>
+  <path d="M149 145c-14 17-18 37-12 57 15 1 25-9 30-27 8 17 20 23 35 14-1-22-14-39-39-54Z" fill="#e1191d"/>
+  <circle cx="131" cy="88" r="9" fill="#2a1a10"/>
+  <path d="M166 41c0-18 14-32 32-32s32 14 32 32c0 11-6 21-15 27-5 3-7 7-7 12h-21c0-5-2-9-7-12-9-6-14-16-14-27Z" fill="#f6b21a"/>
+  <path d="M186 82h25m-22 11h19m-15 10h11" fill="none" stroke="#2a1a10" stroke-width="6" stroke-linecap="round"/>
+  <path d="M198 78V57m10 21V57m-10 0c0-7 10-7 10 0" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M198 16V6m-31 18-8-8m76 8 8-8m-91 25h-13m112 0h-13" fill="none" stroke="#f6b21a" stroke-width="7" stroke-linecap="round"/>
 </svg>
