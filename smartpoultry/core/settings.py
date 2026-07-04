@@ -4,7 +4,7 @@ Django settings for SMARTPOULTRY project.
 
 import os
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,7 +23,7 @@ RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG_ENV = os.getenv('DEBUG')
-DEBUG = DEBUG_ENV.lower() in ('1', 'true', 'yes', 'on') if DEBUG_ENV is not None else not RUNNING_ON_RENDER
+DEBUG = False if RUNNING_ON_RENDER else DEBUG_ENV.lower() in ('1', 'true', 'yes', 'on') if DEBUG_ENV is not None else True
 
 ALLOWED_HOSTS = [
     host.strip()
@@ -35,7 +35,7 @@ if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com' if RUNNING_ON_RENDER else '').split(',')
     if origin.strip()
 ]
 
@@ -102,13 +102,13 @@ if DATABASE_URL:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': database_url.path.lstrip('/'),
-            'USER': database_url.username,
-            'PASSWORD': database_url.password,
+            'USER': unquote(database_url.username or ''),
+            'PASSWORD': unquote(database_url.password or ''),
             'HOST': database_url.hostname,
             'PORT': database_url.port or '5432',
         }
     }
-elif os.getenv('USE_POSTGRES', 'False').lower() in ('1', 'true', 'yes', 'on'):
+elif os.getenv('USE_POSTGRES', 'False').lower() in ('1', 'true', 'yes', 'on') and os.getenv('DB_HOST'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
