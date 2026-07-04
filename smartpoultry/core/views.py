@@ -27,8 +27,8 @@ def health_check(request):
     database = settings.DATABASES['default']
     static_dirs = [str(path) for path in getattr(settings, 'STATICFILES_DIRS', [])]
     static_sources = {
-        'source_logo_exists': any((path / 'images' / 'rooster-logo.svg').exists() for path in getattr(settings, 'STATICFILES_DIRS', [])),
-        'collected_logo_exists': (settings.STATIC_ROOT / 'images' / 'rooster-logo.svg').exists(),
+        'source_logo_exists': any((path / 'images' / 'smartpoultry_logo.svg').exists() for path in getattr(settings, 'STATICFILES_DIRS', [])),
+        'collected_logo_exists': (settings.STATIC_ROOT / 'images' / 'smartpoultry_logo.svg').exists(),
     }
     return JsonResponse({
         'ok': True,
@@ -707,6 +707,136 @@ def analytics_view(request):
         'prediction_method': method,
         'last_updated': timezone.now(),
     })
+
+
+def estimate_rooster_age_from_spurs(visibility, length, thickness, point_shape, curvature, secondary_clues):
+    if visibility != 'clear':
+        return {
+            'age_range': 'insufficient spur visibility for reliable age estimate',
+            'reasoning': (
+                'The spurs are not visible enough to evaluate length, thickness, point shape, and curvature '
+                'with confidence, so a spur-based age range would be unreliable.'
+            ),
+            'confidence': 'Low',
+            'limitations': 'Spurs are hidden, cropped, blurry, or too small in the photo.',
+        }
+
+    score = 0
+    score += {'none': 0, 'buds': 1, 'short': 2, 'medium': 3, 'long': 4}.get(length, 0)
+    score += {'thin': 0, 'moderate': 1, 'thick': 2}.get(thickness, 0)
+    score += {'rounded': 0, 'pointed': 1, 'worn': 2}.get(point_shape, 0)
+    score += {'straight': 0, 'slight': 1, 'curved': 2}.get(curvature, 0)
+
+    if score <= 1:
+        age_range = 'under 6 months'
+        confidence = 'Medium'
+        reasoning = 'Spurs are absent or only beginning as small buds, which is most consistent with a juvenile rooster.'
+    elif score <= 3:
+        age_range = '6 to 10 months'
+        confidence = 'Medium'
+        reasoning = 'Spurs appear short and lightly developed, suggesting a young rooster approaching maturity.'
+    elif score <= 5:
+        age_range = '10 to 18 months'
+        confidence = 'Medium-High'
+        reasoning = 'Spurs show clear extension with moderate thickness or a pointed tip, which commonly fits a young adult.'
+    elif score <= 7:
+        age_range = '18 months to 3 years'
+        confidence = 'Medium-High'
+        reasoning = 'Spurs are developed in length and thickness, with noticeable point or curvature, matching a mature adult.'
+    else:
+        age_range = '3 years or older'
+        confidence = 'Medium'
+        reasoning = 'Spurs are long, thick, curved, or worn, which is more typical of an older mature rooster.'
+
+    if secondary_clues:
+        reasoning = f'{reasoning} Secondary clues noted: {secondary_clues}'
+
+    return {
+        'age_range': age_range,
+        'reasoning': reasoning,
+        'confidence': confidence,
+        'limitations': (
+            'This estimate is based mainly on spur observations entered from the photo. Breed, trimming, injury, '
+            'image angle, and husbandry conditions can change spur appearance.'
+        ),
+    }
+
+
+@login_required(login_url='login')
+def rooster_age_estimator_view(request):
+    """Estimate rooster age ranges using user-entered spur observations from uploaded photos."""
+    results = []
+    visibility_labels = {
+        'clear': 'Spurs clearly visible',
+        'partial': 'Partially visible',
+        'hidden': 'Hidden or not visible',
+    }
+    length_labels = {
+        'none': 'none visible',
+        'buds': 'small spur buds',
+        'short': 'short spurs',
+        'medium': 'medium spurs',
+        'long': 'long spurs',
+    }
+    thickness_labels = {
+        'thin': 'thin',
+        'moderate': 'moderate',
+        'thick': 'thick',
+    }
+    point_labels = {
+        'rounded': 'rounded or blunt point',
+        'pointed': 'sharp pointed tip',
+        'worn': 'worn or irregular point',
+    }
+    curvature_labels = {
+        'straight': 'straight',
+        'slight': 'slightly curved',
+        'curved': 'strongly curved',
+    }
+
+    if request.method == 'POST':
+        photos = request.FILES.getlist('photos')
+        rooster_count = max(1, len(photos), len(request.POST.getlist('spur_visibility')))
+
+        for index in range(rooster_count):
+            def value_from_list(name, default=''):
+                values = request.POST.getlist(name)
+                return values[index] if index < len(values) else default
+
+            visibility = value_from_list('spur_visibility', 'hidden')
+            length = value_from_list('spur_length', 'none')
+            thickness = value_from_list('spur_thickness', 'thin')
+            point_shape = value_from_list('spur_point_shape', 'rounded')
+            curvature = value_from_list('spur_curvature', 'straight')
+            secondary_clues = value_from_list('secondary_clues', '').strip()
+            estimate = estimate_rooster_age_from_spurs(
+                visibility,
+                length,
+                thickness,
+                point_shape,
+                curvature,
+                secondary_clues,
+            )
+            photo_name = photos[index].name if index < len(photos) else f'Rooster {index + 1}'
+            spur_observations = (
+                f"Visibility: {visibility_labels.get(visibility, visibility)}. "
+                f"Length: {length_labels.get(length, length)}. "
+                f"Thickness: {thickness_labels.get(thickness, thickness)}. "
+                f"Point shape: {point_labels.get(point_shape, point_shape)}. "
+                f"Curvature: {curvature_labels.get(curvature, curvature)}."
+            )
+
+            results.append({
+                'number': index + 1,
+                'photo_name': photo_name,
+                'estimated_age_range': estimate['age_range'],
+                'spur_observations': spur_observations,
+                'reasoning': estimate['reasoning'],
+                'confidence': estimate['confidence'],
+                'limitations': estimate['limitations'],
+            })
+
+    return render(request, 'rooster_age_estimator.html', {'results': results})
 
 
 @login_required(login_url='login')

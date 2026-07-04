@@ -41,6 +41,7 @@ urlpatterns = [
     path('revenue/', views.revenue_view, name='revenue'),
     path('expenses/', views.expenses_view, name='expenses'),
     path('analytics/', views.analytics_view, name='analytics'),
+    path('rooster-age-estimator/', views.rooster_age_estimator_view, name='rooster_age_estimator'),
     path('reports/', views.reports_view, name='reports'),
     path('production-records/', views.production_records_view, name='production_records'),
     path('production-records/add/', views.production_record_create, name='production_record_create'),

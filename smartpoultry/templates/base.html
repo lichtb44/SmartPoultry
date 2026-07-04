@@ -108,6 +108,9 @@
                     <a class="sidebar-link {% if request.path == '/analytics/' %}active{% endif %}" href="{% url 'analytics' %}">
                         <i class="bi bi-cpu"></i> ML Predictions
                     </a>
+                    <a class="sidebar-link {% if request.path == '/rooster-age-estimator/' %}active{% endif %}" href="{% url 'rooster_age_estimator' %}">
+                        <i class="bi bi-camera"></i> Rooster Age
+                    </a>
                     <a class="sidebar-link {% if request.path == '/forecasting/' %}active{% endif %}" href="{% url 'forecasting' %}">
                         <i class="bi bi-graph-up-arrow"></i> Forecasting
                     </a>
