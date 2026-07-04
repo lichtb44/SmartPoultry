@@ -31,6 +31,13 @@ class MortalityRecordForm(StyledModelForm):
     class Meta:
         model = MortalityRecord
         fields = ['flock', 'quantity', 'reason', 'date', 'description', 'notes']
+        labels = {
+            'flock': 'Flock ID to reduce',
+        }
+        help_texts = {
+            'flock': 'Choose the flock whose quantity will be reduced by this mortality record.',
+            'quantity': 'This number will be subtracted from the selected flock.',
+        }
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
             'notes': forms.Textarea(attrs={'rows': 3}),

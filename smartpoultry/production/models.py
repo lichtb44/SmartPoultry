@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import transaction
 from flocks.models import Flock
 
 
@@ -45,11 +47,60 @@ class MortalityRecord(models.Model):
     date = models.DateField()
     description = models.TextField(blank=True)
     notes = models.TextField(blank=True)
+    flock_quantity_applied = models.BooleanField(default=False, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"{self.flock} - {self.quantity} birds ({self.date})"
+
+    def clean(self):
+        if self.quantity is not None and self.quantity <= 0:
+            raise ValidationError({'quantity': 'Mortality quantity must be greater than zero.'})
+
+        if not self.flock_id or self.quantity is None:
+            return
+
+        available_quantity = self.flock.quantity
+        if self.pk:
+            old_record = MortalityRecord.objects.filter(pk=self.pk).select_related('flock').first()
+            if old_record and old_record.flock_quantity_applied and old_record.flock_id == self.flock_id:
+                available_quantity += old_record.quantity
+
+        if self.quantity > available_quantity:
+            raise ValidationError({
+                'quantity': f'Mortality quantity cannot exceed the selected flock quantity ({available_quantity}).'
+            })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        with transaction.atomic():
+            old_record = None
+            if self.pk:
+                old_record = MortalityRecord.objects.select_for_update().get(pk=self.pk)
+                if old_record.flock_quantity_applied:
+                    old_flock = Flock.objects.select_for_update().get(pk=old_record.flock_id)
+                    old_flock.quantity += old_record.quantity
+                    old_flock.save(update_fields=['quantity', 'updated_at'])
+
+            flock = Flock.objects.select_for_update().get(pk=self.flock_id)
+            if self.quantity > flock.quantity:
+                raise ValidationError({
+                    'quantity': f'Mortality quantity cannot exceed the selected flock quantity ({flock.quantity}).'
+                })
+
+            flock.quantity -= self.quantity
+            flock.save(update_fields=['quantity', 'updated_at'])
+            self.flock_quantity_applied = True
+            super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            if self.flock_quantity_applied:
+                flock = Flock.objects.select_for_update().get(pk=self.flock_id)
+                flock.quantity += self.quantity
+                flock.save(update_fields=['quantity', 'updated_at'])
+            return super().delete(*args, **kwargs)
     
     class Meta:
         ordering = ['-date']

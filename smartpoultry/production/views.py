@@ -30,10 +30,14 @@ class MortalityRecordViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         record = serializer.save()
+        record.flock.refresh_from_db()
         create_activity_notification(
             self.request.user,
             "Successfully added mortality record",
-            f"Recorded {record.quantity} mortality for flock {record.flock.flock_id} due to {record.get_reason_display().lower()}.",
+            (
+                f"Recorded {record.quantity} mortality for flock {record.flock.flock_id} due to "
+                f"{record.get_reason_display().lower()}. Remaining flock quantity: {record.flock.quantity}."
+            ),
             record,
         )
 

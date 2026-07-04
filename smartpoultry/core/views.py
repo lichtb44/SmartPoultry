@@ -947,13 +947,20 @@ def mortality_record_create(request):
     form = MortalityRecordForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
         record = form.save()
+        record.flock.refresh_from_db()
         create_activity_notification(
             request.user,
             "Successfully added mortality record",
-            f"Recorded {record.quantity} mortality for flock {record.flock.flock_id} due to {record.get_reason_display().lower()}.",
+            (
+                f"Recorded {record.quantity} mortality for flock {record.flock.flock_id} due to "
+                f"{record.get_reason_display().lower()}. Remaining flock quantity: {record.flock.quantity}."
+            ),
             record,
         )
-        messages.success(request, 'Mortality record added.')
+        messages.success(
+            request,
+            f'Mortality record added. Flock {record.flock.flock_id} quantity reduced to {record.flock.quantity}.',
+        )
         return redirect('mortality_records')
     return render(request, 'mortality_record_form.html', {
         'form': form,
