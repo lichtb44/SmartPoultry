@@ -1,20 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SMARTPOULTRY logo">
-  <rect width="512" height="512" fill="#ffffff"/>
-  <path d="M160 350c-32-105-9-215 62-285" fill="none" stroke="#54351d" stroke-width="12" stroke-linecap="round"/>
-  <path d="M139 380c72-24 154-37 247-36" fill="none" stroke="#54351d" stroke-width="10" stroke-linecap="round"/>
-  <path d="M235 319l89-62 96 64" fill="none" stroke="#54351d" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M281 312v-43h87v53" fill="#ffffff" stroke="#54351d" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M367 290l43 28v36" fill="none" stroke="#54351d" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M315 302h13m23 0h13m-49 25h13m23 0h13" stroke="#54351d" stroke-width="10" stroke-linecap="round"/>
-  <path d="M194 175c31-48 91-67 139-42 32 17 48 50 36 82-13 36-55 53-94 38-40-15-61-43-81-78Z" fill="#ffffff"/>
-  <path d="M193 176c29-58 96-82 149-48 19 12 32 31 38 53" fill="none" stroke="#54351d" stroke-width="8" stroke-linecap="round"/>
-  <path d="M176 159c1-40 31-57 69-35 7-52 57-70 94-30 22 25 25 61 9 96-47-31-105-42-172-31Z" fill="#df111b"/>
-  <path d="M293 94c22-20 49-10 58 20 9-23 37-21 47 2 12 28 2 58-27 84-15-48-41-83-78-106Z" fill="#df111b"/>
-  <path d="M371 181c31 6 60 25 79 55-38 0-71 10-100 32-5-36 2-65 21-87Z" fill="#f5b21a"/>
-  <path d="M327 253c-29 35-38 75-26 121 27 2 45-18 54-60 15 37 39 50 70 31-3-44-29-78-78-102Z" fill="#df111b"/>
-  <circle cx="304" cy="174" r="13" fill="#2b1b10"/>
-  <path d="M350 102c0-31 25-56 56-56s56 25 56 56c0 20-11 37-27 47-7 4-11 12-11 20h-36c0-8-4-16-11-20-16-10-27-27-27-47Z" fill="#f7b21a"/>
-  <path d="M384 173h46m-40 16h35m-28 16h22" fill="none" stroke="#2b1b10" stroke-width="8" stroke-linecap="round"/>
-  <path d="M404 168v-35m20 35v-35m-20 0c0-13 20-13 20 0" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M406 25V9m-58 46-13-13m143 13 13-13m-169 62h-20m210 0h-20" fill="none" stroke="#f7b21a" stroke-width="9" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SMARTPOULTRY rooster logo">
+  <rect width="64" height="64" rx="10" fill="#08233f"/>
+  <g fill="#ffffff">
+    <path d="M25.8 49.3c-3.9-2.8-6.2-7.1-6.2-12.2 0-8.2 6.1-15 13.7-15 2 0 3.8.4 5.4 1.2 1.1-1.6 2.6-2.8 4.4-3.6-.2 2.1-.9 4-2.2 5.6 2.2 2.4 3.5 5.7 3.5 9.4 0 7.8-5.7 14.3-13.1 15.1l.9 5.6h-4.4l-.8-5.8c-.4-.1-.8-.2-1.2-.3Z"/>
+    <path d="M30.6 17.9c-3.2-.7-5.1-2.8-5.6-6.5 2.6.3 4.7 1.4 6.4 3.3.2-2.9 1.5-5.2 4-6.8 1.1 2.8 1 5.4-.3 7.8 2-1.4 4.3-1.8 6.9-1.1-1.4 2.6-3.6 4-6.5 4.3-1.5.1-3.1-.2-4.9-1Z"/>
+    <circle cx="38.2" cy="27.8" r="1.9" fill="#08233f"/>
+    <path d="M44.4 30.5 55 26.3l-8.1 8.4c-.6.6-1.7.4-2-.4l-.5-3.8Z"/>
+    <path d="M18 38.2c-4.7-.6-7.8-3.3-9.1-8.1 4.5.4 8 2.4 10.5 6.2.7 1.1-.1 2.1-1.4 1.9Z"/>
+    <path d="M16.8 43.2c-4 1.9-8 .9-11.8-3 4-1.7 7.7-1.5 11.1.5 1.2.7 1.4 1.8.7 2.5Z"/>
+    <path d="M30.8 56.2h12.4v3.4H27.9c-.7 0-1.1-.8-.7-1.4.8-1.2 2-1.8 3.6-2Z"/>
+  </g>
 </svg>
