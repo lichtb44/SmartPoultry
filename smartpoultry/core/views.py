@@ -15,6 +15,7 @@ from django.db.models.functions import TruncMonth
 from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
 from django.utils.text import capfirst
+from notifications.utils import create_activity_notification
 from .forms import MortalityRecordForm, ProductionRecordForm
 from .models import Feedback, RoosterAgeEstimate
 
@@ -888,7 +889,13 @@ def production_record_create(request):
     """Create a production record."""
     form = ProductionRecordForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        record = form.save()
+        create_activity_notification(
+            request.user,
+            f"Successfully added {record.get_product_type_display().lower()} production record",
+            f"Recorded {record.quantity} {record.unit} for flock {record.flock.flock_id} on {record.date}.",
+            record,
+        )
         messages.success(request, 'Production record added.')
         return redirect('production_records')
     return render(request, 'production_record_form.html', {
@@ -939,7 +946,13 @@ def mortality_record_create(request):
     """Create a mortality record."""
     form = MortalityRecordForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        form.save()
+        record = form.save()
+        create_activity_notification(
+            request.user,
+            "Successfully added mortality record",
+            f"Recorded {record.quantity} mortality for flock {record.flock.flock_id} due to {record.get_reason_display().lower()}.",
+            record,
+        )
         messages.success(request, 'Mortality record added.')
         return redirect('mortality_records')
     return render(request, 'mortality_record_form.html', {
@@ -980,7 +993,33 @@ def mortality_record_delete(request, record_id):
 @login_required(login_url='login')
 def forecasting_view(request):
     """Forecasting page."""
+    ensure_month_end_forecast_notification(request.user)
     return render(request, 'forecasting.html')
+
+
+def ensure_month_end_forecast_notification(user):
+    today = timezone.localdate()
+    tomorrow = today + timedelta(days=1)
+    if tomorrow.month == today.month:
+        return
+
+    month_marker = today.year * 100 + today.month
+    notification_exists = user.notifications.filter(
+        related_object_type='month_end_forecast',
+        related_object_id=month_marker,
+    ).exists()
+    if notification_exists:
+        return
+
+    notification = create_activity_notification(
+        user,
+        "Month-end forecasting is ready",
+        f"Review your month-end forecast for {today:%B %Y}, including projected revenue, profit, feed demand, and production.",
+        notification_type='info',
+    )
+    notification.related_object_type = 'month_end_forecast'
+    notification.related_object_id = month_marker
+    notification.save(update_fields=['related_object_type', 'related_object_id'])
 
 
 @login_required(login_url='login')
@@ -993,5 +1032,6 @@ def scenario_analysis_view(request):
 def notifications_page(request):
     """User notifications page."""
     from notifications.models import Notification
+    ensure_month_end_forecast_notification(request.user)
     notifications = Notification.objects.filter(user=request.user)[:50]
     return render(request, 'notifications_page.html', {'notifications': notifications})

@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from notifications.utils import create_activity_notification
 from .models import ProductionRecord, MortalityRecord, BreedInformation, HealthRecord
 from .serializers import (ProductionRecordSerializer, MortalityRecordSerializer,
                          BreedInformationSerializer, HealthRecordSerializer)
@@ -11,12 +12,30 @@ class ProductionRecordViewSet(viewsets.ModelViewSet):
     serializer_class = ProductionRecordSerializer
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        record = serializer.save()
+        create_activity_notification(
+            self.request.user,
+            f"Successfully added {record.get_product_type_display().lower()} production record",
+            f"Recorded {record.quantity} {record.unit} for flock {record.flock.flock_id} on {record.date}.",
+            record,
+        )
+
 
 class MortalityRecordViewSet(viewsets.ModelViewSet):
     """ViewSet for mortality records."""
     queryset = MortalityRecord.objects.all()
     serializer_class = MortalityRecordSerializer
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        record = serializer.save()
+        create_activity_notification(
+            self.request.user,
+            "Successfully added mortality record",
+            f"Recorded {record.quantity} mortality for flock {record.flock.flock_id} due to {record.get_reason_display().lower()}.",
+            record,
+        )
 
 
 class BreedInformationViewSet(viewsets.ModelViewSet):
