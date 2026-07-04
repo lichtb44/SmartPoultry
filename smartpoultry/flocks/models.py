@@ -7,8 +7,6 @@ class Flock(models.Model):
     BREED_CHOICES = [
         ('layers', 'Layers'),
         ('broilers', 'Broilers'),
-        ('ducks', 'Ducks'),
-        ('turkeys', 'Turkeys'),
         ('other', 'Other'),
     ]
     STATUS_CHOICES = [
