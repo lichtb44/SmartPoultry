@@ -801,7 +801,7 @@ def rooster_age_estimator_view(request):
 
     if request.method == 'POST':
         photos = request.FILES.getlist('photos')
-        rooster_count = max(1, len(photos), len(request.POST.getlist('spur_visibility')))
+        rooster_count = len(photos)
 
         for index in range(rooster_count):
             def value_from_list(name, default=''):
@@ -822,7 +822,8 @@ def rooster_age_estimator_view(request):
                 curvature,
                 secondary_clues,
             )
-            photo_name = photos[index].name if index < len(photos) else f'Rooster {index + 1}'
+            photo = photos[index]
+            photo_name = photo.name
             spur_observations = (
                 f"Visibility: {visibility_labels.get(visibility, visibility)}. "
                 f"Length: {length_labels.get(length, length)}. "
@@ -846,8 +847,7 @@ def rooster_age_estimator_view(request):
                 'confidence': estimate['confidence'],
                 'limitations': estimate['limitations'],
             }
-            if index < len(photos):
-                record_data['photo'] = photos[index]
+            record_data['photo'] = photo
 
             record = RoosterAgeEstimate.objects.create(
                 **record_data
@@ -866,8 +866,10 @@ def rooster_age_estimator_view(request):
 
         if results:
             messages.success(request, f"Saved {len(results)} rooster age estimate{'s' if len(results) != 1 else ''} to the database.")
+        else:
+            messages.error(request, 'Upload at least one rooster photo before estimating age.')
 
-    saved_estimates = RoosterAgeEstimate.objects.filter(user=request.user)[:20]
+    saved_estimates = RoosterAgeEstimate.objects.filter(user=request.user).exclude(photo='')[:20]
     return render(request, 'rooster_age_estimator.html', {
         'results': results,
         'saved_estimates': saved_estimates,

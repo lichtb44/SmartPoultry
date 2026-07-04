@@ -93,12 +93,36 @@
     </div>
 </div>
 
+<!-- Message Dialog -->
+<div class="modal fade" id="messageDialog" tabindex="-1" aria-labelledby="messageDialogTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="messageDialogTitle">Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="messageDialogText"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
     let editingFlockId = null;
     let deletingFlockId = null;
+
+    function showMessageDialog(message, title = 'Message') {
+        document.getElementById('messageDialogTitle').textContent = title;
+        document.getElementById('messageDialogText').textContent = message;
+        new bootstrap.Modal(document.getElementById('messageDialog')).show();
+    }
 
     function loadFlocks() {
         fetch('/api/flocks/')
@@ -181,7 +205,7 @@
             const message = Object.entries(err)
                 .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
                 .join('\n') || 'Unable to save flock.';
-            alert(message);
+            showMessageDialog(message, 'Unable to Save Flock');
             console.error('Error saving flock:', err);
         });
     });
@@ -228,7 +252,7 @@
             loadFlocks();
         })
         .catch(err => {
-            alert(err.message);
+            showMessageDialog(err.message, 'Unable to Delete Flock');
             console.error('Error deleting flock:', err);
         });
     });

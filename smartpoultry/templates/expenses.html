@@ -18,7 +18,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Total Expenses</h5>
-                <h2 id="totalExpenses">₱0</h2>
+                <h2 id="totalExpenses">&#8369;0</h2>
             </div>
         </div>
     </div>
@@ -26,7 +26,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Average Expense</h5>
-                <h2 id="avgExpense">₱0</h2>
+                <h2 id="avgExpense">&#8369;0</h2>
             </div>
         </div>
     </div>
@@ -44,6 +44,7 @@
                     <th>Type</th>
                     <th>Description</th>
                     <th>Amount</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="expensesBody">
@@ -95,10 +96,53 @@
     </div>
 </div>
 
+<!-- Delete Expense Modal -->
+<div class="modal fade" id="deleteExpenseModal" tabindex="-1" aria-labelledby="deleteExpenseModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteExpenseModalTitle">Delete Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Delete <strong id="deleteExpenseName"></strong> from your expense records?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteExpenseBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    let deletingExpenseId = null;
+
+    function parseExpenseDate(dateString) {
+        const [year, month, day] = dateString.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
+    function formatExpenseDate(dateString) {
+        return parseExpenseDate(dateString).toLocaleDateString();
+    }
+
+    function formatExpenseMonth(dateString) {
+        return parseExpenseDate(dateString).toLocaleDateString(undefined, {
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
+    function addExpenseCell(row, text) {
+        const cell = row.insertCell();
+        cell.textContent = text;
+        return cell;
+    }
+
     function loadExpenses() {
         fetch('/api/expenses/')
             .then(response => response.json())
@@ -106,29 +150,58 @@
                 const tbody = document.getElementById('expensesBody');
                 tbody.innerHTML = '';
                 let total = 0;
-                const results = data.results || [];
-                
+                const results = (data.results || []).sort((a, b) => {
+                    return parseExpenseDate(b.date) - parseExpenseDate(a.date);
+                });
+                let currentMonth = '';
+
                 results.forEach(expense => {
+                    const expenseMonth = formatExpenseMonth(expense.date);
+                    if (expenseMonth !== currentMonth) {
+                        currentMonth = expenseMonth;
+                        const monthRow = tbody.insertRow();
+                        monthRow.className = 'table-light';
+
+                        const monthCell = monthRow.insertCell();
+                        monthCell.colSpan = 5;
+                        monthCell.className = 'fw-bold text-uppercase small text-muted';
+                        monthCell.textContent = currentMonth;
+                    }
+
                     const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${new Date(expense.date).toLocaleDateString()}</td>
-                        <td>${expense.expense_type}</td>
-                        <td>${expense.description}</td>
-                        <td>₱${parseFloat(expense.amount).toFixed(2)}</td>
-                    `;
+                    addExpenseCell(row, formatExpenseDate(expense.date));
+                    addExpenseCell(row, expense.expense_type);
+                    addExpenseCell(row, expense.description);
+                    addExpenseCell(row, '\u20b1' + parseFloat(expense.amount).toFixed(2));
+
+                    const actionsCell = row.insertCell();
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'btn btn-sm btn-danger';
+                    deleteButton.type = 'button';
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', () => {
+                        confirmDeleteExpense(expense.id, expense.description);
+                    });
+                    actionsCell.appendChild(deleteButton);
+
                     tbody.appendChild(row);
                     total += parseFloat(expense.amount);
                 });
-                
-                document.getElementById('totalExpenses').textContent = '₱' + total.toFixed(2);
-                document.getElementById('avgExpense').textContent = '₱' + (results.length > 0 ? (total / results.length).toFixed(2) : 0);
+
+                document.getElementById('totalExpenses').textContent = '\u20b1' + total.toFixed(2);
+                document.getElementById('avgExpense').textContent = '\u20b1' + (results.length > 0 ? (total / results.length).toFixed(2) : 0);
             });
     }
 
     document.getElementById('saveExpenseBtn').addEventListener('click', function() {
         const form = document.getElementById('addExpenseForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
         const formData = new FormData(form);
-        
+
         fetch('/api/expenses/', {
             method: 'POST',
             headers: {
@@ -147,6 +220,38 @@
             bootstrap.Modal.getInstance(document.getElementById('addExpenseModal')).hide();
             loadExpenses();
             form.reset();
+        });
+    });
+
+    function confirmDeleteExpense(id, description) {
+        deletingExpenseId = id;
+        document.getElementById('deleteExpenseName').textContent = description;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteExpenseModal')).show();
+    }
+
+    document.getElementById('confirmDeleteExpenseBtn').addEventListener('click', function() {
+        if (!deletingExpenseId) {
+            return;
+        }
+
+        fetch(`/api/expenses/${deletingExpenseId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Unable to delete expense.');
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('deleteExpenseModal')).hide();
+            deletingExpenseId = null;
+            loadExpenses();
+        })
+        .catch(error => {
+            showAppDialog(error.message, 'Unable to Delete Expense');
+            console.error('Error deleting expense:', error);
         });
     });
 

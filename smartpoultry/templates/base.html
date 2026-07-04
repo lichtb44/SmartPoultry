@@ -183,7 +183,39 @@
         </div>
     {% endif %}
 
+    <div class="modal fade" id="appDialog" tabindex="-1" aria-labelledby="appDialogTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appDialogTitle">Message</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0" id="appDialogText"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.showAppDialog = function(message, title = 'Message') {
+            const titleElement = document.getElementById('appDialogTitle');
+            const textElement = document.getElementById('appDialogText');
+            const dialogElement = document.getElementById('appDialog');
+
+            titleElement.textContent = title;
+            textElement.textContent = message;
+            bootstrap.Modal.getOrCreateInstance(dialogElement).show();
+        };
+
+        window.alert = function(message) {
+            window.showAppDialog(message, 'Message');
+        };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}

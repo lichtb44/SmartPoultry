@@ -159,7 +159,7 @@
             loadInventory();
         })
         .catch(error => {
-            alert(error.message);
+            showAppDialog(error.message, 'Unable to Delete Inventory Item');
             console.error('Error deleting inventory item:', error);
         });
     }

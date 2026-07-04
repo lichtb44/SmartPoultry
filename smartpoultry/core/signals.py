@@ -4,6 +4,7 @@ from django.dispatch import receiver
 
 from core.models import TransactionRecord
 from expenses.models import Expense
+from inventory.models import Inventory
 from revenue.models import Revenue
 
 
@@ -73,3 +74,23 @@ def record_expense_save(sender, instance, created, using, **kwargs):
 @receiver(pre_delete, sender=Expense, dispatch_uid='record_expense_transaction_delete')
 def record_expense_delete(sender, instance, using, **kwargs):
     _record_expense_transaction(instance, 'deleted', using)
+
+
+@receiver(post_save, sender=Inventory, dispatch_uid='create_expense_for_inventory_create')
+def create_expense_for_inventory_create(sender, instance, created, using, **kwargs):
+    if not created:
+        return
+
+    Expense.objects.using(using).create(
+        user=instance.user,
+        expense_type=instance.item_type,
+        description=f"Inventory purchase: {instance.name}",
+        amount=instance.total_value,
+        date=instance.date_added,
+        category='inventory',
+        notes=(
+            f"Auto-created from inventory item #{instance.pk}: "
+            f"{instance.quantity} {instance.unit} at {instance.cost_per_unit} each."
+        ),
+    )
+
