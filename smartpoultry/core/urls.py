@@ -8,6 +8,7 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
+    path('__health/', views.health_check, name='health_check'),
     path('', views.index, name='index'),
     path('login/', views.index, name='login'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),

@@ -1,5 +1,7 @@
+import os
 from datetime import timedelta
 
+from django.conf import settings
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -10,13 +12,41 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
 from django.utils.text import capfirst
 from .forms import MortalityRecordForm, ProductionRecordForm
 from .models import Feedback
 
 User = get_user_model()
+DEPLOY_MARKER = 'smartpoultry-health-2026-07-04-01'
+
+
+def health_check(request):
+    """Lightweight production diagnostic that avoids templates and database queries."""
+    database = settings.DATABASES['default']
+    static_dirs = [str(path) for path in getattr(settings, 'STATICFILES_DIRS', [])]
+    static_sources = {
+        'source_logo_exists': any((path / 'images' / 'rooster-logo.svg').exists() for path in getattr(settings, 'STATICFILES_DIRS', [])),
+        'collected_logo_exists': (settings.STATIC_ROOT / 'images' / 'rooster-logo.svg').exists(),
+    }
+    return JsonResponse({
+        'ok': True,
+        'marker': DEPLOY_MARKER,
+        'render': bool(os.getenv('RENDER') or os.getenv('RENDER_EXTERNAL_HOSTNAME')),
+        'render_hostname': os.getenv('RENDER_EXTERNAL_HOSTNAME', ''),
+        'debug': settings.DEBUG,
+        'allowed_hosts': settings.ALLOWED_HOSTS,
+        'database_engine': database.get('ENGINE', ''),
+        'database_host': database.get('HOST', ''),
+        'database_name': str(database.get('NAME', '')),
+        'static_url': settings.STATIC_URL,
+        'static_root': str(settings.STATIC_ROOT),
+        'static_dirs': static_dirs,
+        'staticfiles_storage': getattr(settings, 'STATICFILES_STORAGE', ''),
+        'whitenoise_use_finders': getattr(settings, 'WHITENOISE_USE_FINDERS', None),
+        **static_sources,
+    })
 
 
 def is_admin_user(user):
