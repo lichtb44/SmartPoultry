@@ -4,22 +4,40 @@ Django settings for SMARTPOULTRY project.
 
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+RUNNING_ON_RENDER = bool(os.getenv('RENDER') or os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 
 # Load project environment variables after BASE_DIR is known.
-# override=True keeps the local .env authoritative for development.
-load_dotenv(BASE_DIR / '.env', override=True)
+# Keep real environment variables from deployment platforms authoritative.
+if not RUNNING_ON_RENDER:
+    load_dotenv(BASE_DIR / '.env', override=False)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key-change-in-production')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG_ENV = os.getenv('DEBUG')
+DEBUG = DEBUG_ENV.lower() in ('1', 'true', 'yes', 'on') if DEBUG_ENV is not None else not RUNNING_ON_RENDER
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
+    if host.strip()
+]
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -76,7 +94,20 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 # Using SQLite for development (default), PostgreSQL for production
-if os.getenv('USE_POSTGRES', 'False') == 'True':
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    database_url = urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': database_url.path.lstrip('/'),
+            'USER': database_url.username,
+            'PASSWORD': database_url.password,
+            'HOST': database_url.hostname,
+            'PORT': database_url.port or '5432',
+        }
+    }
+elif os.getenv('USE_POSTGRES', 'False').lower() in ('1', 'true', 'yes', 'on'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',

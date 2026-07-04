@@ -466,6 +466,13 @@ body {
     font-size: 0.8rem;
 }
 
+.admin-db-note {
+    display: inline-block;
+    margin-top: 6px;
+    color: #66738b;
+    font-size: 0.74rem;
+}
+
 .admin-search {
     display: flex;
     height: 38px;
@@ -488,6 +495,10 @@ body {
     border: 0;
     color: #66738b;
     background: transparent;
+}
+
+.admin-filter-form {
+    margin: 0;
 }
 
 .admin-filter,
@@ -515,6 +526,10 @@ body {
     color: #fff;
     border: 1px solid #0b6ee8;
     background: #0b6ee8;
+}
+
+.admin-filter {
+    width: 100%;
 }
 
 .admin-table {
@@ -557,6 +572,26 @@ body {
 
 .admin-person strong {
     font-weight: 650;
+}
+
+.admin-person small {
+    display: block;
+    margin-top: 2px;
+    color: #66738b;
+    font-size: 0.72rem;
+}
+
+.admin-role {
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    padding: 0 10px;
+    color: #33445f;
+    border-radius: 5px;
+    background: #eef4fb;
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .admin-status,

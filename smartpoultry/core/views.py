@@ -377,14 +377,20 @@ def feedback_view(request):
 def admin_dashboard(request):
     """Admin dashboard for user accounts and feedback management."""
     query = request.GET.get('q', '').strip()
-    users = User.objects.select_related('farm').order_by('username')
+    status = request.GET.get('status', '').strip()
+    users = User.objects.select_related('farm').order_by('id')
     if query:
         users = users.filter(
             Q(username__icontains=query) |
             Q(email__icontains=query) |
             Q(first_name__icontains=query) |
-            Q(last_name__icontains=query)
+            Q(last_name__icontains=query) |
+            Q(farm__name__icontains=query)
         )
+    if status == 'active':
+        users = users.filter(is_active=True, is_active_user=True)
+    elif status == 'inactive':
+        users = users.filter(Q(is_active=False) | Q(is_active_user=False))
 
     feedback_items = Feedback.objects.select_related('user').all()[:10]
     stats = {
@@ -402,6 +408,7 @@ def admin_dashboard(request):
         'feedback_status_counts': feedback_status_counts,
         'stats': stats,
         'query': query,
+        'status': status,
     })
 
 

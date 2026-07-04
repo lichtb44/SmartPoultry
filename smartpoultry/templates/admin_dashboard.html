@@ -55,16 +55,21 @@
         <div>
             <h2>Users Management</h2>
             <p>View and manage all system users</p>
+            <span class="admin-db-note">Database table: accounts_userprofile</span>
         </div>
         <form class="admin-search" method="get">
+            <input type="hidden" name="status" value="{{ status }}">
             <input type="search" name="q" value="{{ query }}" placeholder="Search users by name, email or farm...">
             <button type="submit" aria-label="Search"><i class="bi bi-search"></i></button>
         </form>
-        <select class="admin-filter" aria-label="Status filter">
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Inactive</option>
-        </select>
+        <form id="admin-user-filter" class="admin-filter-form" method="get">
+            <input type="hidden" name="q" value="{{ query }}">
+            <select class="admin-filter" name="status" aria-label="Status filter" onchange="this.form.submit()">
+                <option value="" {% if not status %}selected{% endif %}>All Status</option>
+                <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+        </form>
         <a class="admin-lite-btn" href="/admin/accounts/userprofile/">
             <i class="bi bi-download"></i> Export
         </a>
@@ -78,10 +83,13 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Name</th>
+                    <th>User</th>
                     <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
                     <th>Farm Name</th>
                     <th>Status</th>
+                    <th>Admin</th>
                     <th>Registered Date</th>
                     <th>Last Login</th>
                     <th class="text-end">Actions</th>
@@ -90,20 +98,34 @@
             <tbody>
                 {% for account in managed_users %}
                     <tr>
-                        <td>{{ forloop.counter }}</td>
+                        <td>#{{ account.id }}</td>
                         <td>
                             <div class="admin-person">
                                 <span>{{ account.username|slice:":2"|upper }}</span>
-                                <strong>{{ account.get_full_name|default:account.username }}</strong>
+                                <div>
+                                    <strong>{{ account.get_full_name|default:account.username }}</strong>
+                                    <small>{{ account.username }}</small>
+                                </div>
                             </div>
                         </td>
                         <td>{{ account.email|default:"-" }}</td>
+                        <td>{{ account.phone|default:"-" }}</td>
+                        <td><span class="admin-role">{{ account.get_role_display }}</span></td>
                         <td>{% if account.farm %}{{ account.farm.name }}{% else %}-{% endif %}</td>
                         <td>
                             {% if account.is_active and account.is_active_user %}
                                 <span class="admin-status active"><i></i>Active</span>
                             {% else %}
                                 <span class="admin-status inactive"><i></i>Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if account.is_superuser %}
+                                Superuser
+                            {% elif account.is_staff %}
+                                Staff
+                            {% else %}
+                                -
                             {% endif %}
                         </td>
                         <td>{{ account.date_joined|date:"m/d/Y" }}</td>
@@ -134,14 +156,14 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">No users found.</td>
+                        <td colspan="11" class="text-center text-muted py-4">No users found.</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
     <div class="admin-table-footer">
-        <span>Showing 1 to {{ managed_users|length }} of {{ stats.total_users }} users</span>
+        <span>Showing {{ managed_users|length }} of {{ stats.total_users }} database users</span>
         <div class="admin-pagination">
             <button type="button"><i class="bi bi-chevron-left"></i></button>
             <button type="button" class="active">1</button>
