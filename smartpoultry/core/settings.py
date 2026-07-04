@@ -98,7 +98,17 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASE_URL = os.getenv('DATABASE_URL')
 database_url = urlparse(DATABASE_URL) if DATABASE_URL else None
 database_url_is_local = database_url and database_url.hostname in ('localhost', '127.0.0.1', '::1')
-if DATABASE_URL and not (RUNNING_ON_RENDER and database_url_is_local):
+allow_local_database_url = os.getenv('ALLOW_LOCAL_DATABASE_URL', '').lower() in ('1', 'true', 'yes', 'on')
+use_database_url = DATABASE_URL and (allow_local_database_url or not database_url_is_local)
+use_named_postgres = (
+    os.getenv('USE_POSTGRES', 'False').lower() in ('1', 'true', 'yes', 'on')
+    and os.getenv('DB_HOST')
+    and (
+        allow_local_database_url
+        or os.getenv('DB_HOST') not in ('localhost', '127.0.0.1', '::1')
+    )
+)
+if use_database_url:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -109,7 +119,7 @@ if DATABASE_URL and not (RUNNING_ON_RENDER and database_url_is_local):
             'PORT': database_url.port or '5432',
         }
     }
-elif os.getenv('USE_POSTGRES', 'False').lower() in ('1', 'true', 'yes', 'on') and os.getenv('DB_HOST'):
+elif use_named_postgres:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
