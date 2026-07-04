@@ -17,7 +17,7 @@ class ProductionRecordViewSet(viewsets.ModelViewSet):
         create_activity_notification(
             self.request.user,
             f"Successfully added {record.get_product_type_display().lower()} production record",
-            f"Recorded {record.quantity} {record.unit} for flock {record.flock.flock_id} on {record.date}.",
+            f"Recorded {record.quantity:g} {record.unit} for flock {record.flock.flock_id} on {record.date}.",
             record,
         )
 

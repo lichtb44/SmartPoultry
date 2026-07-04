@@ -31,7 +31,7 @@
                         <td>{{ record.date|date:"M d, Y" }}</td>
                         <td>{{ record.flock.flock_id }}</td>
                         <td>{{ record.get_product_type_display }}</td>
-                        <td>{{ record.quantity }} {{ record.unit }}</td>
+                        <td>{{ record.quantity|floatformat:0 }} {{ record.unit }}</td>
                         <td>{{ record.notes|default:"-" }}</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
