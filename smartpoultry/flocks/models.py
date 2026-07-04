@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 
 
@@ -16,7 +17,8 @@ class Flock(models.Model):
         ('retired', 'Retired'),
     ]
 
-    flock_id = models.CharField(max_length=100, unique=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='flocks', null=True, blank=True)
+    flock_id = models.CharField(max_length=100)
     breed = models.CharField(max_length=50, choices=BREED_CHOICES)
     quantity = models.IntegerField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
@@ -31,3 +33,6 @@ class Flock(models.Model):
 
     class Meta:
         ordering = ['-date_added']
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'flock_id'], name='unique_flock_id_per_user'),
+        ]

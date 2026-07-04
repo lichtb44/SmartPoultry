@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 
 
@@ -11,6 +12,7 @@ class Prediction(models.Model):
         ('expenses', 'Expense Forecast'),
     ]
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='predictions', null=True, blank=True)
     prediction_type = models.CharField(max_length=50, choices=PREDICTION_TYPES)
     forecast_date = models.DateField()
     predicted_value = models.DecimalField(max_digits=15, decimal_places=2)

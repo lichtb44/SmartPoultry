@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Report(models.Model):
@@ -13,6 +14,7 @@ class Report(models.Model):
         ('financial', 'Financial Report'),
     ]
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reports', null=True, blank=True)
     report_type = models.CharField(max_length=50, choices=REPORT_TYPES)
     title = models.CharField(max_length=255)
     start_date = models.DateField()

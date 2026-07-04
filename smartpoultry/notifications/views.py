@@ -13,6 +13,9 @@ class NotificationViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
     
     @action(detail=False, methods=['post'])
     def mark_as_read(self, request):
@@ -31,9 +34,11 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
 class AlertViewSet(viewsets.ModelViewSet):
     """ViewSet for alerts."""
-    queryset = Alert.objects.all()
     serializer_class = AlertSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Alert.objects.filter(farm__owner=self.request.user)
     
     @action(detail=True, methods=['post'])
     def acknowledge(self, request, pk=None):
@@ -59,3 +64,6 @@ class NotificationPreferenceViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         return NotificationPreference.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

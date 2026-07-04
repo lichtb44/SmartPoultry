@@ -7,12 +7,14 @@ from .serializers import InventorySerializer, FeedTypeSerializer
 
 class InventoryViewSet(viewsets.ModelViewSet):
     """ViewSet for managing inventory."""
-    queryset = Inventory.objects.all()
     serializer_class = InventorySerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Inventory.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
-        item = serializer.save()
+        item = serializer.save(user=self.request.user)
         create_activity_notification(
             self.request.user,
             f"Successfully added {item.name} to feed and inventory",

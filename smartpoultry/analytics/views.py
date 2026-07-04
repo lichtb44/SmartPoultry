@@ -6,6 +6,11 @@ from .serializers import PredictionSerializer
 
 class PredictionViewSet(viewsets.ModelViewSet):
     """ViewSet for predictions and analytics."""
-    queryset = Prediction.objects.all()
     serializer_class = PredictionSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Prediction.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

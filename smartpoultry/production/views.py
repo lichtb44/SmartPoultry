@@ -8,12 +8,14 @@ from .serializers import (ProductionRecordSerializer, MortalityRecordSerializer,
 
 class ProductionRecordViewSet(viewsets.ModelViewSet):
     """ViewSet for production records."""
-    queryset = ProductionRecord.objects.all()
     serializer_class = ProductionRecordSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return ProductionRecord.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
-        record = serializer.save()
+        record = serializer.save(user=self.request.user)
         create_activity_notification(
             self.request.user,
             f"Successfully added {record.get_product_type_display().lower()} production record",
@@ -24,12 +26,14 @@ class ProductionRecordViewSet(viewsets.ModelViewSet):
 
 class MortalityRecordViewSet(viewsets.ModelViewSet):
     """ViewSet for mortality records."""
-    queryset = MortalityRecord.objects.all()
     serializer_class = MortalityRecordSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return MortalityRecord.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
-        record = serializer.save()
+        record = serializer.save(user=self.request.user)
         record.flock.refresh_from_db()
         create_activity_notification(
             self.request.user,
@@ -51,6 +55,8 @@ class BreedInformationViewSet(viewsets.ModelViewSet):
 
 class HealthRecordViewSet(viewsets.ModelViewSet):
     """ViewSet for health records."""
-    queryset = HealthRecord.objects.all()
     serializer_class = HealthRecordSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return HealthRecord.objects.filter(flock__user=self.request.user)

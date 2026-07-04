@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from flocks.models import Flock
 
 
@@ -12,6 +13,7 @@ class Revenue(models.Model):
         ('other', 'Other'),
     ]
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='revenue_records', null=True, blank=True)
     revenue_type = models.CharField(max_length=50, choices=REVENUE_TYPES)
     flock = models.ForeignKey(Flock, on_delete=models.SET_NULL, null=True, blank=True)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)

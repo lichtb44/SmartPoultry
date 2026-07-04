@@ -19,6 +19,11 @@ class StyledModelForm(forms.ModelForm):
 
 
 class ProductionRecordForm(StyledModelForm):
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['flock'].queryset = self.fields['flock'].queryset.filter(user=user)
+
     class Meta:
         model = ProductionRecord
         fields = ['flock', 'product_type', 'quantity', 'unit', 'date', 'notes']
@@ -28,6 +33,11 @@ class ProductionRecordForm(StyledModelForm):
 
 
 class MortalityRecordForm(StyledModelForm):
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['flock'].queryset = self.fields['flock'].queryset.filter(user=user)
+
     class Meta:
         model = MortalityRecord
         fields = ['flock', 'quantity', 'reason', 'date', 'description', 'notes']

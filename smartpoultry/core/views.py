@@ -189,33 +189,33 @@ def dashboard(request):
             return None
         return round(((current - previous) / previous) * 100, 1)
 
-    current_revenue = decimal_sum(Revenue.objects.filter(date__gte=current_month_start), 'total_amount')
+    current_revenue = decimal_sum(Revenue.objects.filter(user=request.user, date__gte=current_month_start), 'total_amount')
     previous_revenue = decimal_sum(
-        Revenue.objects.filter(date__gte=previous_month_start, date__lt=current_month_start),
+        Revenue.objects.filter(user=request.user, date__gte=previous_month_start, date__lt=current_month_start),
         'total_amount',
     )
-    current_expenses = decimal_sum(Expense.objects.filter(date__gte=current_month_start), 'amount')
+    current_expenses = decimal_sum(Expense.objects.filter(user=request.user, date__gte=current_month_start), 'amount')
     previous_expenses = decimal_sum(
-        Expense.objects.filter(date__gte=previous_month_start, date__lt=current_month_start),
+        Expense.objects.filter(user=request.user, date__gte=previous_month_start, date__lt=current_month_start),
         'amount',
     )
     current_profit = current_revenue - current_expenses
     previous_profit = previous_revenue - previous_expenses
     feed_cost = decimal_sum(
-        Expense.objects.filter(date__gte=current_month_start, expense_type='feed'),
+        Expense.objects.filter(user=request.user, date__gte=current_month_start, expense_type='feed'),
         'amount',
     )
     production_total = decimal_sum(
-        ProductionRecord.objects.filter(date__gte=current_month_start, product_type='eggs'),
+        ProductionRecord.objects.filter(user=request.user, date__gte=current_month_start, product_type='eggs'),
         'quantity',
     )
-    mortality_total = MortalityRecord.objects.filter(date__gte=current_month_start).aggregate(
+    mortality_total = MortalityRecord.objects.filter(user=request.user, date__gte=current_month_start).aggregate(
         total=Sum('quantity')
     )['total'] or 0
-    total_birds = Flock.objects.filter(status='active').aggregate(total=Sum('quantity'))['total'] or 0
-    active_flocks = Flock.objects.filter(status='active').count()
+    total_birds = Flock.objects.filter(user=request.user, status='active').aggregate(total=Sum('quantity'))['total'] or 0
+    active_flocks = Flock.objects.filter(user=request.user, status='active').count()
     mortality_rate = round((mortality_total / total_birds) * 100, 2) if total_birds else 0
-    feed_stock = decimal_sum(Inventory.objects.filter(item_type='feed'), 'quantity')
+    feed_stock = decimal_sum(Inventory.objects.filter(user=request.user, item_type='feed'), 'quantity')
     feed_expense_share = round((feed_cost / current_expenses) * 100, 1) if current_expenses else 0
 
     trend_start = current_month_start
@@ -230,21 +230,21 @@ def dashboard(request):
 
     revenue_by_month = {
         month_key(item['month']): item['total'] or 0
-        for item in Revenue.objects.filter(date__gte=trend_start)
+        for item in Revenue.objects.filter(user=request.user, date__gte=trend_start)
         .annotate(month=TruncMonth('date'))
         .values('month')
         .annotate(total=Sum('total_amount'))
     }
     expenses_by_month = {
         month_key(item['month']): item['total'] or 0
-        for item in Expense.objects.filter(date__gte=trend_start)
+        for item in Expense.objects.filter(user=request.user, date__gte=trend_start)
         .annotate(month=TruncMonth('date'))
         .values('month')
         .annotate(total=Sum('amount'))
     }
     feed_by_month = {
         month_key(item['month']): item['total'] or 0
-        for item in Expense.objects.filter(date__gte=trend_start, expense_type='feed')
+        for item in Expense.objects.filter(user=request.user, date__gte=trend_start, expense_type='feed')
         .annotate(month=TruncMonth('date'))
         .values('month')
         .annotate(total=Sum('amount'))
@@ -617,14 +617,14 @@ def analytics_view(request):
 
     revenue_by_month = {
         month_key(item['month']): item['total'] or 0
-        for item in Revenue.objects.filter(date__gte=history_start)
+        for item in Revenue.objects.filter(user=request.user, date__gte=history_start)
         .annotate(month=TruncMonth('date'))
         .values('month')
         .annotate(total=Sum('total_amount'))
     }
     expense_by_month = {
         month_key(item['month']): item['total'] or 0
-        for item in Expense.objects.filter(date__gte=history_start)
+        for item in Expense.objects.filter(user=request.user, date__gte=history_start)
         .annotate(month=TruncMonth('date'))
         .values('month')
         .annotate(total=Sum('amount'))
@@ -650,6 +650,7 @@ def analytics_view(request):
         week_end = week_start + timedelta(days=7)
         production_by_week.append(float(decimal_sum(
             ProductionRecord.objects.filter(
+                user=request.user,
                 product_type='eggs',
                 date__gte=week_start,
                 date__lt=week_end,
@@ -661,6 +662,7 @@ def analytics_view(request):
     method = 'SQLite recent trend forecast'
     for index, forecast_month in enumerate(future_months):
         Prediction.objects.update_or_create(
+            user=request.user,
             prediction_type='profit',
             forecast_date=forecast_month,
             defaults={
@@ -670,6 +672,7 @@ def analytics_view(request):
             },
         )
         Prediction.objects.update_or_create(
+            user=request.user,
             prediction_type='eggs',
             forecast_date=forecast_month,
             defaults={
@@ -680,6 +683,7 @@ def analytics_view(request):
         )
 
     latest_predictions = Prediction.objects.filter(
+        user=request.user,
         prediction_type__in=['profit', 'eggs'],
         forecast_date__in=future_months,
     ).order_by('forecast_date', 'prediction_type')
@@ -880,16 +884,18 @@ def reports_view(request):
 def production_records_view(request):
     """Production records page."""
     from production.models import ProductionRecord
-    records = ProductionRecord.objects.select_related('flock')[:50]
+    records = ProductionRecord.objects.select_related('flock').filter(user=request.user)[:50]
     return render(request, 'production_records.html', {'records': records})
 
 
 @login_required(login_url='login')
 def production_record_create(request):
     """Create a production record."""
-    form = ProductionRecordForm(request.POST or None)
+    form = ProductionRecordForm(request.POST or None, user=request.user)
     if request.method == 'POST' and form.is_valid():
-        record = form.save()
+        record = form.save(commit=False)
+        record.user = request.user
+        record.save()
         create_activity_notification(
             request.user,
             f"Successfully added {record.get_product_type_display().lower()} production record",
@@ -909,8 +915,8 @@ def production_record_create(request):
 def production_record_update(request, record_id):
     """Edit a production record."""
     from production.models import ProductionRecord
-    record = get_object_or_404(ProductionRecord, pk=record_id)
-    form = ProductionRecordForm(request.POST or None, instance=record)
+    record = get_object_or_404(ProductionRecord, pk=record_id, user=request.user)
+    form = ProductionRecordForm(request.POST or None, instance=record, user=request.user)
     if request.method == 'POST' and form.is_valid():
         form.save()
         messages.success(request, 'Production record updated.')
@@ -926,7 +932,7 @@ def production_record_update(request, record_id):
 def production_record_delete(request, record_id):
     """Delete a production record."""
     from production.models import ProductionRecord
-    record = get_object_or_404(ProductionRecord, pk=record_id)
+    record = get_object_or_404(ProductionRecord, pk=record_id, user=request.user)
     if request.method == 'POST':
         record.delete()
         messages.success(request, 'Production record deleted.')
@@ -937,16 +943,18 @@ def production_record_delete(request, record_id):
 def mortality_records_view(request):
     """Mortality records page."""
     from production.models import MortalityRecord
-    records = MortalityRecord.objects.select_related('flock')[:50]
+    records = MortalityRecord.objects.select_related('flock').filter(user=request.user)[:50]
     return render(request, 'mortality_records.html', {'records': records})
 
 
 @login_required(login_url='login')
 def mortality_record_create(request):
     """Create a mortality record."""
-    form = MortalityRecordForm(request.POST or None)
+    form = MortalityRecordForm(request.POST or None, user=request.user)
     if request.method == 'POST' and form.is_valid():
-        record = form.save()
+        record = form.save(commit=False)
+        record.user = request.user
+        record.save()
         record.flock.refresh_from_db()
         create_activity_notification(
             request.user,
@@ -970,8 +978,8 @@ def mortality_record_create(request):
 def mortality_record_update(request, record_id):
     """Edit a mortality record."""
     from production.models import MortalityRecord
-    record = get_object_or_404(MortalityRecord, pk=record_id)
-    form = MortalityRecordForm(request.POST or None, instance=record)
+    record = get_object_or_404(MortalityRecord, pk=record_id, user=request.user)
+    form = MortalityRecordForm(request.POST or None, instance=record, user=request.user)
     if request.method == 'POST' and form.is_valid():
         form.save()
         messages.success(request, 'Mortality record updated.')
@@ -987,7 +995,7 @@ def mortality_record_update(request, record_id):
 def mortality_record_delete(request, record_id):
     """Delete a mortality record."""
     from production.models import MortalityRecord
-    record = get_object_or_404(MortalityRecord, pk=record_id)
+    record = get_object_or_404(MortalityRecord, pk=record_id, user=request.user)
     if request.method == 'POST':
         record.delete()
         messages.success(request, 'Mortality record deleted.')

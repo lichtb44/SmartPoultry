@@ -3,6 +3,12 @@ from .models import ProductionRecord, MortalityRecord, BreedInformation, HealthR
 
 
 class ProductionRecordSerializer(serializers.ModelSerializer):
+    def validate_flock(self, flock):
+        request = self.context.get('request')
+        if request and flock.user_id != request.user.id:
+            raise serializers.ValidationError('Select one of your own flocks.')
+        return flock
+
     class Meta:
         model = ProductionRecord
         fields = ['id', 'flock', 'product_type', 'quantity', 'unit', 'date', 'notes', 'created_at']
@@ -26,6 +32,12 @@ class MortalityRecordSerializer(serializers.ModelSerializer):
             'created_at',
         ]
         read_only_fields = ['id', 'created_at']
+
+    def validate_flock(self, flock):
+        request = self.context.get('request')
+        if request and flock.user_id != request.user.id:
+            raise serializers.ValidationError('Select one of your own flocks.')
+        return flock
 
     def validate(self, attrs):
         flock = attrs.get('flock', getattr(self.instance, 'flock', None))
@@ -56,6 +68,12 @@ class BreedInformationSerializer(serializers.ModelSerializer):
 
 
 class HealthRecordSerializer(serializers.ModelSerializer):
+    def validate_flock(self, flock):
+        request = self.context.get('request')
+        if request and flock.user_id != request.user.id:
+            raise serializers.ValidationError('Select one of your own flocks.')
+        return flock
+
     class Meta:
         model = HealthRecord
         fields = ['id', 'flock', 'health_status', 'disease_name', 'treatment', 'medication', 

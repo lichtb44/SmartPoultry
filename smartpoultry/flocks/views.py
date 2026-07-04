@@ -7,12 +7,14 @@ from .serializers import FlockSerializer
 
 class FlockViewSet(viewsets.ModelViewSet):
     """ViewSet for managing flocks."""
-    queryset = Flock.objects.all()
     serializer_class = FlockSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Flock.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
-        flock = serializer.save()
+        flock = serializer.save(user=self.request.user)
         create_activity_notification(
             self.request.user,
             f"Successfully added a new flock of {flock.get_breed_display().lower()}",

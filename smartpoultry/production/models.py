@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from flocks.models import Flock
@@ -13,6 +14,7 @@ class ProductionRecord(models.Model):
         ('other', 'Other'),
     ]
     
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='production_records', null=True, blank=True)
     flock = models.ForeignKey(Flock, on_delete=models.CASCADE, related_name='production_records')
     product_type = models.CharField(max_length=50, choices=PRODUCT_TYPES)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
@@ -41,6 +43,7 @@ class MortalityRecord(models.Model):
         ('unknown', 'Unknown'),
     ]
     
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='mortality_records', null=True, blank=True)
     flock = models.ForeignKey(Flock, on_delete=models.CASCADE, related_name='mortality_records')
     quantity = models.IntegerField()
     reason = models.CharField(max_length=50, choices=MORTALITY_REASONS, default='unknown')

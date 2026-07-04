@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Expense(models.Model):
@@ -13,6 +14,7 @@ class Expense(models.Model):
         ('other', 'Other'),
     ]
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='expense_records', null=True, blank=True)
     expense_type = models.CharField(max_length=50, choices=EXPENSE_TYPES)
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)

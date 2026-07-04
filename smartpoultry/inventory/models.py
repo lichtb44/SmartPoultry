@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class FeedType(models.Model):
@@ -20,6 +21,7 @@ class Inventory(models.Model):
         ('other', 'Other'),
     ]
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='inventory_items', null=True, blank=True)
     item_type = models.CharField(max_length=50, choices=ITEM_TYPES)
     name = models.CharField(max_length=255)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)

@@ -7,12 +7,14 @@ from .serializers import ExpenseSerializer
 
 class ExpenseViewSet(viewsets.ModelViewSet):
     """ViewSet for managing expenses."""
-    queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Expense.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
-        expense = serializer.save()
+        expense = serializer.save(user=self.request.user)
         create_activity_notification(
             self.request.user,
             f"Successfully added {expense.get_expense_type_display().lower()} expense",

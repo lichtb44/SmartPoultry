@@ -7,12 +7,14 @@ from .serializers import RevenueSerializer
 
 class RevenueViewSet(viewsets.ModelViewSet):
     """ViewSet for managing revenue."""
-    queryset = Revenue.objects.all()
     serializer_class = RevenueSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Revenue.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
-        revenue = serializer.save()
+        revenue = serializer.save(user=self.request.user)
         create_activity_notification(
             self.request.user,
             f"Successfully added {revenue.get_revenue_type_display().lower()} revenue",
