@@ -40,7 +40,7 @@
                                 </a>
                                 <form method="post" action="{% url 'production_record_delete' record.id %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Delete this production record?');">
+                                    <button type="submit" class="btn btn-outline-danger" data-confirm="Delete this production record?">
                                         <i class="bi bi-trash"></i> Delete
                                     </button>
                                 </form>

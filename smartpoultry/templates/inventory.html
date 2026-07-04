@@ -142,25 +142,23 @@
     });
 
     function deleteItem(id) {
-        if (!confirm('Delete this inventory item?')) {
-            return;
-        }
-
-        fetch(`/api/inventory/items/${id}/`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Unable to delete inventory item.');
-            }
-            loadInventory();
-        })
-        .catch(error => {
-            showAppDialog(error.message, 'Unable to Delete Inventory Item');
-            console.error('Error deleting inventory item:', error);
+        showAppConfirmDialog('Delete this inventory item?', function() {
+            fetch(`/api/inventory/items/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Unable to delete inventory item.');
+                }
+                loadInventory();
+            })
+            .catch(error => {
+                showAppDialog(error.message, 'Unable to Delete Inventory Item');
+                console.error('Error deleting inventory item:', error);
+            });
         });
     }
 

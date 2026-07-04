@@ -97,11 +97,11 @@
         .then(response => response.json())
         .then(data => {
             loadReports();
-            alert('Report generated successfully!');
+            showAppDialog('Report generated successfully!', 'Report Generated');
         })
         .catch(err => {
             console.error('Error:', err);
-            alert('Error generating report');
+            showAppDialog('Error generating report', 'Unable to Generate Report');
         });
     }
 
