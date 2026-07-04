@@ -46,6 +46,59 @@ class Feedback(models.Model):
         ordering = ['-created_at']
 
 
+class RoosterAgeEstimate(models.Model):
+    """Saved rooster age estimate based primarily on spur observations."""
+    SPUR_VISIBILITY_CHOICES = [
+        ('clear', 'Spurs clearly visible'),
+        ('partial', 'Partially visible'),
+        ('hidden', 'Hidden or not visible'),
+    ]
+    SPUR_LENGTH_CHOICES = [
+        ('none', 'None visible'),
+        ('buds', 'Small buds'),
+        ('short', 'Short'),
+        ('medium', 'Medium'),
+        ('long', 'Long'),
+    ]
+    SPUR_THICKNESS_CHOICES = [
+        ('thin', 'Thin'),
+        ('moderate', 'Moderate'),
+        ('thick', 'Thick'),
+    ]
+    POINT_SHAPE_CHOICES = [
+        ('rounded', 'Rounded or blunt'),
+        ('pointed', 'Sharp pointed'),
+        ('worn', 'Worn or irregular'),
+    ]
+    CURVATURE_CHOICES = [
+        ('straight', 'Straight'),
+        ('slight', 'Slightly curved'),
+        ('curved', 'Strongly curved'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='rooster_age_estimates')
+    photo = models.FileField(upload_to='rooster_age_estimates/%Y/%m/', blank=True)
+    photo_name = models.CharField(max_length=255, blank=True)
+    spur_visibility = models.CharField(max_length=20, choices=SPUR_VISIBILITY_CHOICES)
+    spur_length = models.CharField(max_length=20, choices=SPUR_LENGTH_CHOICES)
+    spur_thickness = models.CharField(max_length=20, choices=SPUR_THICKNESS_CHOICES)
+    spur_point_shape = models.CharField(max_length=20, choices=POINT_SHAPE_CHOICES)
+    spur_curvature = models.CharField(max_length=20, choices=CURVATURE_CHOICES)
+    secondary_clues = models.TextField(blank=True)
+    estimated_age_range = models.CharField(max_length=120)
+    spur_observations = models.TextField()
+    reasoning = models.TextField()
+    confidence = models.CharField(max_length=40)
+    limitations = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Rooster estimate for {self.user} - {self.estimated_age_range}"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
 class TransactionRecord(models.Model):
     """Immutable ledger entry for financial transactions."""
     TRANSACTION_TYPES = [

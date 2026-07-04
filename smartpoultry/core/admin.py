@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Farm, Feedback, TransactionRecord
+from .models import Farm, Feedback, RoosterAgeEstimate, TransactionRecord
 
 
 @admin.register(Farm)
@@ -41,3 +41,11 @@ class TransactionRecordAdmin(admin.ModelAdmin):
         'metadata',
         'created_at',
     )
+
+
+@admin.register(RoosterAgeEstimate)
+class RoosterAgeEstimateAdmin(admin.ModelAdmin):
+    list_display = ('user', 'estimated_age_range', 'confidence', 'spur_visibility', 'created_at')
+    list_filter = ('spur_visibility', 'spur_length', 'spur_thickness', 'confidence', 'created_at')
+    search_fields = ('user__username', 'user__email', 'photo_name', 'estimated_age_range', 'reasoning')
+    readonly_fields = ('created_at',)

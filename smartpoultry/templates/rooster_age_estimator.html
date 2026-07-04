@@ -87,6 +87,7 @@
 
 {% if results %}
 <section class="rooster-results">
+    <h2 class="section-heading">Latest Result</h2>
     {% for result in results %}
         <article class="panel-card rooster-result-card">
             <div class="rooster-result-title">
@@ -109,6 +110,36 @@
     {% endfor %}
 </section>
 {% endif %}
+
+<section class="rooster-saved">
+    <div class="section-heading-row">
+        <h2 class="section-heading">Saved Estimates</h2>
+        <span>{{ saved_estimates|length }} recent record{{ saved_estimates|length|pluralize }}</span>
+    </div>
+    <div class="panel-card rooster-saved-list">
+        {% for estimate in saved_estimates %}
+            <article class="rooster-saved-item">
+                <div class="rooster-saved-photo">
+                    {% if estimate.photo %}
+                        <img src="{{ estimate.photo.url }}" alt="{{ estimate.photo_name|default:'Rooster photo' }}">
+                    {% else %}
+                        <i class="bi bi-image"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="rooster-saved-title">
+                        <strong>{{ estimate.estimated_age_range }}</strong>
+                        <span>{{ estimate.created_at|date:"M d, Y h:i A" }}</span>
+                    </div>
+                    <p>{{ estimate.spur_observations }}</p>
+                    <small>Confidence: {{ estimate.confidence }}{% if estimate.photo_name %} · {{ estimate.photo_name }}{% endif %}</small>
+                </div>
+            </article>
+        {% empty %}
+            <p class="text-muted mb-0">No rooster age estimates saved yet.</p>
+        {% endfor %}
+    </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

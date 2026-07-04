@@ -16,7 +16,7 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.utils import timezone
 from django.utils.text import capfirst
 from .forms import MortalityRecordForm, ProductionRecordForm
-from .models import Feedback
+from .models import Feedback, RoosterAgeEstimate
 
 User = get_user_model()
 DEPLOY_MARKER = 'smartpoultry-health-2026-07-04-01'
@@ -826,8 +826,31 @@ def rooster_age_estimator_view(request):
                 f"Curvature: {curvature_labels.get(curvature, curvature)}."
             )
 
+            record_data = {
+                'user': request.user,
+                'photo_name': photo_name,
+                'spur_visibility': visibility,
+                'spur_length': length,
+                'spur_thickness': thickness,
+                'spur_point_shape': point_shape,
+                'spur_curvature': curvature,
+                'secondary_clues': secondary_clues,
+                'estimated_age_range': estimate['age_range'],
+                'spur_observations': spur_observations,
+                'reasoning': estimate['reasoning'],
+                'confidence': estimate['confidence'],
+                'limitations': estimate['limitations'],
+            }
+            if index < len(photos):
+                record_data['photo'] = photos[index]
+
+            record = RoosterAgeEstimate.objects.create(
+                **record_data
+            )
+
             results.append({
                 'number': index + 1,
+                'id': record.id,
                 'photo_name': photo_name,
                 'estimated_age_range': estimate['age_range'],
                 'spur_observations': spur_observations,
@@ -836,7 +859,14 @@ def rooster_age_estimator_view(request):
                 'limitations': estimate['limitations'],
             })
 
-    return render(request, 'rooster_age_estimator.html', {'results': results})
+        if results:
+            messages.success(request, f"Saved {len(results)} rooster age estimate{'s' if len(results) != 1 else ''} to the database.")
+
+    saved_estimates = RoosterAgeEstimate.objects.filter(user=request.user)[:20]
+    return render(request, 'rooster_age_estimator.html', {
+        'results': results,
+        'saved_estimates': saved_estimates,
+    })
 
 
 @login_required(login_url='login')
