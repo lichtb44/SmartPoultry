@@ -199,6 +199,8 @@ body {
     height: 32px;
     flex: 0 0 32px;
     border-radius: 8px;
+    object-fit: contain;
+    background: #fff;
 }
 
 .admin-brand-logo {
